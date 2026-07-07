@@ -17,6 +17,18 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
   - ver historico de despesas do ciclo;
   - cadastrar e listar contas fixas.
 
+## Estrutura
+
+```txt
+src/
+  AssistenteGastoDiario.Api/             API, Swagger e frontend estatico
+  AssistenteGastoDiario.Application/     DTOs, interfaces e servicos de regra
+  AssistenteGastoDiario.Domain/          Entidades e enums de dominio
+  AssistenteGastoDiario.Infrastructure/  EF Core, PostgreSQL, auth e servicos
+docs/
+  GITHUB-PUBLISH.md                      Guia para publicar no GitHub
+```
+
 ## Requisitos
 
 - PostgreSQL rodando localmente.
@@ -72,4 +84,12 @@ Se estiver usando o SDK global instalado em `C:\Program Files\dotnet`, o projeto
 4. Cadastre uma conta fixa.
 5. Lance uma despesa rapida.
 6. Confira o limite diario e o historico atualizados.
+
+## GitHub
+
+Para publicar este projeto no GitHub, siga o guia:
+
+[docs/GITHUB-PUBLISH.md](docs/GITHUB-PUBLISH.md)
+
+O workflow `.github/workflows/dotnet-build.yml` roda restore e build em pull requests e pushes para `main`.
 
