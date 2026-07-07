@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Assistente de Gasto Diario</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <main class="shell">
+        <section class="hero">
+            <div class="hero__eyebrow">MVP financeiro pessoal</div>
+            <h1>Quanto posso gastar hoje?</h1>
+            <p>Entre, veja seu limite seguro do dia e lance uma despesa em poucos segundos.</p>
+        </section>
+
+        <section class="panel auth-panel" id="auth-panel">
+            <div class="tabs" role="tablist" aria-label="Acesso">
+                <button class="tab tab--active" type="button" data-auth-tab="login">Entrar</button>
+                <button class="tab" type="button" data-auth-tab="signup">Criar conta</button>
+            </div>
+
+            <form class="form" id="login-form">
+                <label>
+                    Email
+                    <input name="email" type="email" autocomplete="email" required>
+                </label>
+                <label>
+                    Senha
+                    <input name="password" type="password" autocomplete="current-password" required>
+                </label>
+                <button class="button button--primary" type="submit">Entrar no painel</button>
+            </form>
+
+            <form class="form hidden" id="signup-form">
+                <label>
+                    Nome
+                    <input name="name" type="text" autocomplete="name" required maxlength="120">
+                </label>
+                <label>
+                    Email
+                    <input name="email" type="email" autocomplete="email" required>
+                </label>
+                <label>
+                    Senha
+                    <input name="password" type="password" autocomplete="new-password" required minlength="8">
+                </label>
+                <button class="button button--primary" type="submit">Criar e entrar</button>
+            </form>
+        </section>
+
+        <section class="app hidden" id="app-panel">
+            <header class="app-header">
+                <div>
+                    <p class="muted">Painel de hoje</p>
+                    <h2 id="user-greeting">Ola</h2>
+                </div>
+                <button class="button button--ghost" id="logout-button" type="button">Sair</button>
+            </header>
+
+            <section class="setup-card hidden" id="setup-card">
+                <div>
+                    <p class="muted">Primeira configuracao</p>
+                    <h3>Informe sua renda e ciclo</h3>
+                </div>
+                <form class="setup-grid" id="settings-form">
+                    <label>
+                        Renda mensal
+                        <input name="monthlyIncomeDefault" type="number" min="0" step="0.01" value="3000" required>
+                    </label>
+                    <label>
+                        Dia inicial do ciclo
+                        <input name="cycleStartDay" type="number" min="1" max="31" value="1" required>
+                    </label>
+                    <label>
+                        Dia de fechamento
+                        <input name="monthClosureDay" type="number" min="1" max="31" value="31">
+                    </label>
+                    <button class="button button--primary" type="submit">Salvar configuracao</button>
+                </form>
+            </section>
+
+            <section class="dashboard-grid">
+                <article class="limit-card">
+                    <span class="chip" id="cycle-label">Ciclo atual</span>
+                    <p class="muted">Voce pode gastar hoje</p>
+                    <strong id="safe-limit">R$ 0,00</strong>
+                    <p id="safe-message">Configure sua vida financeira para ver seu limite.</p>
+                </article>
+
+                <article class="summary-card">
+                    <h3>Resumo do ciclo</h3>
+                    <div class="summary-list">
+                        <span>Renda</span><strong id="income-total">R$ 0,00</strong>
+                        <span>Contas</span><strong id="fixed-total">R$ 0,00</strong>
+                        <span>Despesas</span><strong id="expenses-total">R$ 0,00</strong>
+                        <span>Metas</span><strong id="goals-total">R$ 0,00</strong>
+                    </div>
+                </article>
+            </section>
+
+            <section class="panel quick-panel">
+                <div class="section-title">
+                    <div>
+                        <p class="muted">Lancamento rapido</p>
+                        <h3>Registrar despesa</h3>
+                    </div>
+                    <span id="quick-status" class="status"></span>
+                </div>
+                <form class="quick-form" id="quick-expense-form">
+                    <label>
+                        O que foi?
+                        <input name="description" type="text" placeholder="Ex: cafe, mercado, uber" required maxlength="160">
+                    </label>
+                    <label>
+                        Valor
+                        <input name="amount" type="number" min="0.01" step="0.01" placeholder="0,00" required>
+                    </label>
+                    <label>
+                        Categoria
+                        <select name="categoryId" id="category-select">
+                            <option value="">Automatica</option>
+                        </select>
+                    </label>
+                    <label>
+                        Pagamento
+                        <select name="paymentMethod">
+                            <option value="4">Pix</option>
+                            <option value="2">Debito</option>
+                            <option value="3">Credito</option>
+                            <option value="1">Dinheiro</option>
+                            <option value="6">Outro</option>
+                        </select>
+                    </label>
+                    <button class="button button--primary" type="submit">Lancar despesa</button>
+                </form>
+            </section>
+
+            <section class="panel expenses-panel">
+                <div class="section-title">
+                    <div>
+                        <p class="muted">Historico do ciclo</p>
+                        <h3>Ultimas despesas</h3>
+                    </div>
+                    <span id="expenses-status" class="status"></span>
+                </div>
+                <div class="expense-list" id="expense-list">
+                    <div class="empty-state">Quando voce lancar despesas, elas aparecem aqui.</div>
+                </div>
+            </section>
+
+            <section class="panel bills-panel">
+                <div class="section-title">
+                    <div>
+                        <p class="muted">Compromissos mensais</p>
+                        <h3>Contas fixas</h3>
+                    </div>
+                    <span id="bills-status" class="status"></span>
+                </div>
+                <form class="bill-form" id="fixed-bill-form">
+                    <label>
+                        Nome da conta
+                        <input name="name" type="text" placeholder="Ex: aluguel, internet" required maxlength="120">
+                    </label>
+                    <label>
+                        Valor
+                        <input name="amount" type="number" min="0.01" step="0.01" placeholder="0,00" required>
+                    </label>
+                    <label>
+                        Vencimento
+                        <input name="dueDay" type="number" min="1" max="31" value="5" required>
+                    </label>
+                    <label>
+                        Categoria
+                        <select name="categoryId" id="bill-category-select">
+                            <option value="">Sem categoria</option>
+                        </select>
+                    </label>
+                    <button class="button button--primary" type="submit">Adicionar conta</button>
+                </form>
+                <div class="bill-list" id="bill-list">
+                    <div class="empty-state">Cadastre suas contas fixas para o limite diario ficar mais realista.</div>
+                </div>
+            </section>
+        </section>
+
+        <div class="toast hidden" id="toast" role="status"></div>
+    </main>
+    <script src="/app.js" defer></script>
+</body>
+</html>
