@@ -3,9 +3,11 @@ const state = {
     user: JSON.parse(localStorage.getItem("agd.user") || "null"),
     dashboard: null,
     categoriesById: new Map(),
+    incomesById: new Map(),
     expensesById: new Map(),
     fixedBillsById: new Map(),
     goalsById: new Map(),
+    incomeCategories: [],
     expenseCategories: [],
     billCategories: [],
     goalCategories: []
@@ -96,6 +98,28 @@ function bindForms() {
         setTimeout(() => $("#quick-status").textContent = "", 1800);
     });
 
+    $("#income-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const data = Object.fromEntries(new FormData(form));
+        $("#incomes-status").textContent = "Salvando...";
+        await api("/api/me/incomes", {
+            method: "POST",
+            body: {
+                categoryId: data.categoryId || null,
+                description: data.description,
+                amount: Number(data.amount),
+                receivedOn: data.receivedOn || todayIso(),
+                isRecurring: Boolean(data.isRecurring),
+                notes: null
+            }
+        });
+        form.reset();
+        form.elements.receivedOn.value = todayIso();
+        showToast(`${data.description} entrou nas rendas do ciclo.`);
+        await loadDashboard();
+    });
+
     $("#fixed-bill-form").addEventListener("submit", async (event) => {
         event.preventDefault();
         const form = event.currentTarget;
@@ -164,6 +188,24 @@ function bindForms() {
         showToast("Contribuicao registrada. Meta e limite recalculados.");
         await loadDashboard();
         await loadFinancialGoals();
+    });
+
+    $("#income-list").addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-income-action]");
+        if (!button) {
+            return;
+        }
+
+        const income = state.incomesById.get(button.dataset.incomeId);
+        if (!income) {
+            return;
+        }
+
+        if (button.dataset.incomeAction === "edit") {
+            await editIncome(income);
+        } else if (button.dataset.incomeAction === "delete") {
+            await deleteIncome(income);
+        }
     });
 
     $("#expense-list").addEventListener("click", async (event) => {
@@ -250,6 +292,7 @@ async function renderSession() {
     }
 
     $("#user-greeting").textContent = `Ola, ${state.user?.name || "vamos nessa"}`;
+    $("#income-received-on").value = todayIso();
     try {
         await loadCategories();
         await loadDashboard();
@@ -283,11 +326,13 @@ async function loadDashboard() {
         $("#setup-card").classList.add("hidden");
         const dashboard = await api("/api/me/dashboard");
         renderDashboard(dashboard);
+        await loadIncomesForCurrentCycle();
         await loadExpensesForCurrentCycle();
     } catch (error) {
         if (error.status === 404) {
             $("#setup-card").classList.remove("hidden");
             renderDashboard(null);
+            renderIncomes([]);
             renderExpenses([]);
             return;
         }
@@ -297,9 +342,22 @@ async function loadDashboard() {
 
 async function loadCategories() {
     state.categoriesById.clear();
+    state.incomeCategories = await api("/api/me/categories?type=1");
     state.expenseCategories = await api("/api/me/categories?type=2");
     state.billCategories = await api("/api/me/categories?type=3");
     state.goalCategories = await api("/api/me/categories?type=4");
+
+    const incomeSelect = $("#income-category-select");
+    incomeSelect.innerHTML = '<option value="">Sem categoria</option>';
+    state.incomeCategories
+        .filter((category) => category.isActive)
+        .forEach((category) => {
+            state.categoriesById.set(category.id, category);
+            const option = document.createElement("option");
+            option.value = category.id;
+            option.textContent = category.name;
+            incomeSelect.appendChild(option);
+        });
 
     const select = $("#category-select");
     select.innerHTML = '<option value="">Automatica</option>';
@@ -349,6 +407,7 @@ function renderDashboard(dashboard) {
         $("#fixed-total").textContent = currency.format(0);
         $("#expenses-total").textContent = currency.format(0);
         $("#goals-total").textContent = currency.format(0);
+        renderIncomes([]);
         return;
     }
 
@@ -361,6 +420,23 @@ function renderDashboard(dashboard) {
     $("#fixed-total").textContent = currency.format(safe.fixedBillsTotal);
     $("#expenses-total").textContent = currency.format(safe.expensesTotal);
     $("#goals-total").textContent = currency.format(safe.goalPlannedTotal);
+}
+
+async function loadIncomesForCurrentCycle() {
+    if (!state.dashboard?.financialCycle) {
+        renderIncomes([]);
+        return;
+    }
+
+    $("#incomes-status").textContent = "Atualizando...";
+    const cycle = state.dashboard.financialCycle;
+    const params = new URLSearchParams({
+        startDate: cycle.cycleStartDate,
+        endDate: cycle.cycleEndDate
+    });
+    const incomes = await api(`/api/me/incomes?${params.toString()}`);
+    renderIncomes(incomes);
+    $("#incomes-status").textContent = `${incomes.length} entrada${incomes.length === 1 ? "" : "s"}`;
 }
 
 async function loadExpensesForCurrentCycle() {
@@ -378,6 +454,46 @@ async function loadExpensesForCurrentCycle() {
     const expenses = await api(`/api/me/expenses?${params.toString()}`);
     renderExpenses(expenses);
     $("#expenses-status").textContent = `${expenses.length} lancamento${expenses.length === 1 ? "" : "s"}`;
+}
+
+function renderIncomes(incomes) {
+    const list = $("#income-list");
+    list.innerHTML = "";
+    state.incomesById.clear();
+
+    if (!incomes.length) {
+        list.innerHTML = '<div class="empty-state">Quando voce cadastrar uma renda do ciclo, ela aparece aqui.</div>';
+        $("#incomes-status").textContent = "";
+        return;
+    }
+
+    const sortedIncomes = [...incomes].sort((left, right) => {
+        const receivedOnComparison = right.receivedOn.localeCompare(left.receivedOn);
+        return receivedOnComparison !== 0
+            ? receivedOnComparison
+            : left.description.localeCompare(right.description);
+    });
+
+    sortedIncomes.forEach((income) => {
+        state.incomesById.set(income.id, income);
+        const category = income.categoryId ? state.categoriesById.get(income.categoryId) : null;
+        const item = document.createElement("article");
+        item.className = "income-item";
+        item.innerHTML = `
+            <div>
+                <strong>${escapeHtml(income.description)}</strong>
+                <span>${formatDate(income.receivedOn)}${category ? ` &middot; ${escapeHtml(category.name)}` : ""}${income.isRecurring ? " &middot; recorrente" : ""}</span>
+            </div>
+            <div class="item-side">
+                <b>${currency.format(income.amount)}</b>
+                <div class="item-actions">
+                    <button class="button button--tiny" type="button" data-income-action="edit" data-income-id="${income.id}">Editar</button>
+                    <button class="button button--tiny button--danger" type="button" data-income-action="delete" data-income-id="${income.id}">Excluir</button>
+                </div>
+            </div>
+        `;
+        list.appendChild(item);
+    });
 }
 
 function renderExpenses(expenses) {
@@ -523,6 +639,42 @@ function renderFinancialGoals(goals) {
         `;
         list.appendChild(item);
     });
+}
+
+async function editIncome(income) {
+    const description = prompt("Descricao da renda:", income.description);
+    if (description === null) {
+        return;
+    }
+
+    const amount = promptDecimal("Valor da renda:", income.amount, 0.01);
+    if (amount === null) {
+        return;
+    }
+
+    await api(`/api/me/incomes/${income.id}`, {
+        method: "PUT",
+        body: {
+            categoryId: income.categoryId,
+            description,
+            amount,
+            receivedOn: income.receivedOn,
+            isRecurring: income.isRecurring,
+            notes: income.notes
+        }
+    });
+    showToast("Renda atualizada. Limite recalculado.");
+    await loadDashboard();
+}
+
+async function deleteIncome(income) {
+    if (!confirm(`Excluir a renda "${income.description}"?`)) {
+        return;
+    }
+
+    await api(`/api/me/incomes/${income.id}`, { method: "DELETE" });
+    showToast("Renda excluida. Limite recalculado.");
+    await loadDashboard();
 }
 
 async function editExpense(expense) {
@@ -727,6 +879,12 @@ function formatDate(value) {
         day: "2-digit",
         month: "2-digit"
     }).format(new Date(year, month - 1, day));
+}
+
+function todayIso() {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    return new Date(now.getTime() - offset).toISOString().slice(0, 10);
 }
 
 function showToast(message) {

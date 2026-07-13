@@ -16,27 +16,29 @@
 - Tela de configuracao financeira.
 - Tela de dashboard.
 - Tela de lancamento rapido.
+- Cadastro/listagem de rendas no frontend.
 - Historico de despesas recentes.
 - Cadastro/listagem de contas fixas.
 - Cadastro/listagem de metas financeiras no frontend.
 - Contribuicoes para metas no frontend.
 - Edicao/exclusao basica de despesas, contas fixas e metas no frontend.
+- Edicao/exclusao basica de rendas no frontend.
 - Limpeza automatica de sessao expirada no frontend.
 - Scripts locais para iniciar a API.
 
 ## Proximos passos recomendados
 
-1. Rendas no frontend:
-   - registrar salario/entrada;
-   - listar entradas do ciclo;
-   - decidir quando usar renda padrao versus renda lancada.
-
-2. Onboarding guiado:
+1. Onboarding guiado:
    - renda mensal;
    - ciclo;
    - contas fixas;
    - primeira meta;
    - primeiro lancamento.
+
+2. Categorias no frontend:
+   - criar categoria propria;
+   - editar categoria;
+   - ocultar categoria que nao usa.
 
 3. Qualidade:
    - testes automatizados;

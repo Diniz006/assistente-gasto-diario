@@ -136,6 +136,44 @@
                 </form>
             </section>
 
+            <section class="panel incomes-panel">
+                <div class="section-title">
+                    <div>
+                        <p class="muted">Dinheiro que entrou</p>
+                        <h3>Rendas do ciclo</h3>
+                    </div>
+                    <span id="incomes-status" class="status"></span>
+                </div>
+                <form class="income-form" id="income-form">
+                    <label>
+                        Descricao
+                        <input name="description" type="text" placeholder="Ex: salario, freelance" required maxlength="160">
+                    </label>
+                    <label>
+                        Valor
+                        <input name="amount" type="number" min="0.01" step="0.01" placeholder="0,00" required>
+                    </label>
+                    <label>
+                        Recebido em
+                        <input name="receivedOn" type="date" id="income-received-on">
+                    </label>
+                    <label>
+                        Categoria
+                        <select name="categoryId" id="income-category-select">
+                            <option value="">Sem categoria</option>
+                        </select>
+                    </label>
+                    <label class="checkbox-label">
+                        <input name="isRecurring" type="checkbox">
+                        Recorrente
+                    </label>
+                    <button class="button button--primary" type="submit">Adicionar renda</button>
+                </form>
+                <div class="income-list" id="income-list">
+                    <div class="empty-state">Quando voce cadastrar uma renda do ciclo, ela aparece aqui.</div>
+                </div>
+            </section>
+
             <section class="panel expenses-panel">
                 <div class="section-title">
                     <div>

@@ -13,6 +13,7 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
   - criar conta e login;
   - configurar renda mensal e ciclo;
   - ver dashboard com limite diario seguro;
+  - cadastrar, listar, editar e excluir rendas do ciclo;
   - lancar despesa rapidamente;
   - ver historico de despesas do ciclo;
   - cadastrar e listar contas fixas;
@@ -83,10 +84,11 @@ Se estiver usando o SDK global instalado em `C:\Program Files\dotnet`, o projeto
 1. Acesse `http://localhost:5088/`.
 2. Crie uma conta.
 3. Configure renda mensal e ciclo.
-4. Cadastre uma conta fixa.
-5. Lance uma despesa rapida.
-6. Crie uma meta financeira.
-7. Edite ou exclua algum item para conferir o painel recalculado.
+4. Cadastre uma renda do ciclo.
+5. Cadastre uma conta fixa.
+6. Lance uma despesa rapida.
+7. Crie uma meta financeira.
+8. Edite ou exclua algum item para conferir o painel recalculado.
 
 ## GitHub
 

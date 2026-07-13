@@ -229,6 +229,7 @@ select:focus {
 .limit-card,
 .summary-card,
 .quick-panel,
+.incomes-panel,
 .expenses-panel,
 .bills-panel,
 .goals-panel {
@@ -299,6 +300,7 @@ select:focus {
     font-weight: 800;
 }
 
+.income-list,
 .expense-list,
 .bill-list,
 .goal-list {
@@ -306,6 +308,7 @@ select:focus {
     gap: 10px;
 }
 
+.income-form,
 .bill-form,
 .goal-form {
     display: grid;
@@ -315,10 +318,26 @@ select:focus {
     margin-bottom: 18px;
 }
 
+.income-form {
+    grid-template-columns: 1.2fr 0.75fr 0.85fr 1fr auto auto;
+}
+
 .goal-form {
     grid-template-columns: 1.25fr 0.75fr 0.75fr 0.75fr 1fr auto;
 }
 
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 51px;
+}
+
+.checkbox-label input {
+    width: auto;
+}
+
+.income-item,
 .expense-item,
 .bill-item,
 .goal-item {
@@ -337,6 +356,7 @@ select:focus {
     align-items: stretch;
 }
 
+.income-item strong,
 .expense-item strong,
 .bill-item strong,
 .goal-item strong {
@@ -345,6 +365,7 @@ select:focus {
     font-size: 1.05rem;
 }
 
+.income-item span,
 .expense-item span,
 .bill-item span,
 .goal-item span,
@@ -354,6 +375,7 @@ select:focus {
     font-size: 0.9rem;
 }
 
+.income-item b,
 .expense-item b,
 .bill-item b,
 .goal-item b {
@@ -361,6 +383,10 @@ select:focus {
     color: var(--rose);
     font-family: "Trebuchet MS", Verdana, sans-serif;
     font-size: 1.02rem;
+}
+
+.income-item b {
+    color: var(--brand-strong);
 }
 
 .item-side {
@@ -456,6 +482,7 @@ input:disabled {
     .dashboard-grid,
     .setup-grid,
     .quick-form,
+    .income-form,
     .bill-form,
     .goal-form,
     .goal-contribution-form {
@@ -467,6 +494,7 @@ input:disabled {
         flex-direction: column;
     }
 
+    .income-item,
     .expense-item,
     .bill-item,
     .goal-item__header,
