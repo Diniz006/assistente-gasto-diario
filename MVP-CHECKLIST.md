@@ -20,6 +20,7 @@
 - Tela de dashboard.
 - Onboarding guiado dos primeiros passos no frontend.
 - Tela de lancamento rapido.
+- Lancamento e edicao completa de despesas no frontend.
 - Cadastro/listagem de rendas no frontend.
 - Criacao/edicao/ocultacao de categorias no frontend.
 - Historico de despesas recentes.

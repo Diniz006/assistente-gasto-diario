@@ -21,7 +21,7 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
   - cadastrar, listar, editar e excluir rendas do ciclo;
   - criar, editar e ocultar categorias;
   - editar registros por modal interno no frontend;
-  - lancar despesa rapidamente;
+  - lancar despesa rapidamente com data, categoria, pagamento e observacao;
   - ver historico de despesas do ciclo;
   - filtrar e buscar despesas por periodo, texto, categoria e pagamento;
   - cadastrar e listar contas fixas;

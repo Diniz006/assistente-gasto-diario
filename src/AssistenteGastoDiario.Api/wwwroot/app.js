@@ -117,10 +117,13 @@ function bindForms() {
                 description: data.description,
                 amount: Number(data.amount),
                 categoryId: data.categoryId || null,
-                paymentMethod: Number(data.paymentMethod)
+                spentOn: data.spentOn || todayIso(),
+                paymentMethod: Number(data.paymentMethod),
+                notes: data.notes || null
             }
         });
         form.reset();
+        $("#quick-spent-on").value = todayIso();
         $("#quick-status").textContent = "Despesa registrada";
         showToast(`${response.expense.description} entrou no ciclo. Limite atualizado.`);
         renderDashboard(response.dashboard);
@@ -393,6 +396,7 @@ async function renderSession() {
 
     $("#user-greeting").textContent = `Ola, ${state.user?.name || "vamos nessa"}`;
     $("#income-received-on").value = todayIso();
+    $("#quick-spent-on").value = todayIso();
     $("#monthly-reference").value = currentMonthIso();
     try {
         await loadCategories();
@@ -908,6 +912,17 @@ function paymentMethodLabel(paymentMethod) {
     return labels[paymentMethod] || "Pagamento";
 }
 
+function paymentMethodOptions() {
+    return [
+        { value: 1, label: "Dinheiro" },
+        { value: 2, label: "Debito" },
+        { value: 3, label: "Credito" },
+        { value: 4, label: "Pix" },
+        { value: 5, label: "Transferencia" },
+        { value: 6, label: "Outro" }
+    ];
+}
+
 function renderExpenses(expenses) {
     const list = $("#expense-list");
     list.innerHTML = "";
@@ -947,6 +962,7 @@ function renderExpenses(expenses) {
             <div>
                 <strong>${escapeHtml(expense.description)}</strong>
                 <span>${formatDate(expense.spentOn)}${category ? ` &middot; ${escapeHtml(category.name)}` : ""} &middot; ${paymentMethodLabel(expense.paymentMethod)}</span>
+                ${expense.notes ? `<small>${escapeHtml(expense.notes)}</small>` : ""}
             </div>
             <div class="item-side">
                 <b>${currency.format(expense.amount)}</b>
@@ -1260,7 +1276,25 @@ async function deleteIncome(income) {
 async function editExpense(expense) {
     const values = await openEditModal("Editar despesa", [
         { name: "description", label: "Descricao", value: expense.description, maxlength: 160 },
-        { name: "amount", label: "Valor", type: "number", value: expense.amount, min: "0.01", step: "0.01" }
+        { name: "amount", label: "Valor", type: "number", value: expense.amount, min: "0.01", step: "0.01" },
+        { name: "spentOn", label: "Data", type: "date", value: expense.spentOn },
+        {
+            name: "categoryId",
+            label: "Categoria",
+            type: "select",
+            value: expense.categoryId,
+            options: state.expenseCategories
+                .filter((category) => category.isActive || category.id === expense.categoryId)
+                .map((category) => ({ value: category.id, label: category.name }))
+        },
+        {
+            name: "paymentMethod",
+            label: "Pagamento",
+            type: "select",
+            value: expense.paymentMethod,
+            options: paymentMethodOptions()
+        },
+        { name: "notes", label: "Observacao", value: expense.notes || "", maxlength: 300, required: false }
     ]);
     if (!values) {
         return;
@@ -1273,12 +1307,12 @@ async function editExpense(expense) {
     await api(`/api/me/expenses/${expense.id}`, {
         method: "PUT",
         body: {
-            categoryId: expense.categoryId,
+            categoryId: values.categoryId,
             description: values.description,
             amount,
-            spentOn: expense.spentOn,
-            paymentMethod: expense.paymentMethod,
-            notes: expense.notes
+            spentOn: values.spentOn,
+            paymentMethod: Number(values.paymentMethod),
+            notes: values.notes || null
         }
     });
     showToast("Despesa atualizada. Limite recalculado.");
@@ -1389,20 +1423,7 @@ function openEditModal(title, fields) {
     $("#edit-modal-title").textContent = title;
     editModalForm.innerHTML = `
         <div class="modal-form__fields">
-            ${fields.map((field) => `
-                <label>
-                    ${escapeHtml(field.label)}
-                    <input
-                        name="${escapeHtml(field.name)}"
-                        type="${escapeHtml(field.type || "text")}"
-                        value="${escapeHtml(field.value ?? "")}"
-                        ${field.min ? `min="${escapeHtml(field.min)}"` : ""}
-                        ${field.max ? `max="${escapeHtml(field.max)}"` : ""}
-                        ${field.step ? `step="${escapeHtml(field.step)}"` : ""}
-                        ${field.maxlength ? `maxlength="${escapeHtml(field.maxlength)}"` : ""}
-                        required>
-                </label>
-            `).join("")}
+            ${fields.map((field) => renderModalField(field)).join("")}
         </div>
         <div class="modal-actions">
             <button class="button button--ghost" type="button" data-modal-cancel>Cancelar</button>
@@ -1416,6 +1437,38 @@ function openEditModal(title, fields) {
     return new Promise((resolve) => {
         editModalResolver = resolve;
     });
+}
+
+function renderModalField(field) {
+    if (field.type === "select") {
+        return `
+            <label>
+                ${escapeHtml(field.label)}
+                <select name="${escapeHtml(field.name)}" ${field.required === false ? "" : "required"}>
+                    ${(field.options || []).map((option) => `
+                        <option value="${escapeHtml(option.value)}" ${String(option.value) === String(field.value) ? "selected" : ""}>
+                            ${escapeHtml(option.label)}
+                        </option>
+                    `).join("")}
+                </select>
+            </label>
+        `;
+    }
+
+    return `
+        <label>
+            ${escapeHtml(field.label)}
+            <input
+                name="${escapeHtml(field.name)}"
+                type="${escapeHtml(field.type || "text")}"
+                value="${escapeHtml(field.value ?? "")}"
+                ${field.min ? `min="${escapeHtml(field.min)}"` : ""}
+                ${field.max ? `max="${escapeHtml(field.max)}"` : ""}
+                ${field.step ? `step="${escapeHtml(field.step)}"` : ""}
+                ${field.maxlength ? `maxlength="${escapeHtml(field.maxlength)}"` : ""}
+                ${field.required === false ? "" : "required"}>
+        </label>
+    `;
 }
 
 function closeEditModal(value) {

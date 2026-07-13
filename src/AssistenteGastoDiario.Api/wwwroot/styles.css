@@ -222,6 +222,10 @@ select:focus {
     align-items: end;
 }
 
+.quick-form {
+    grid-template-columns: 1.3fr 0.7fr 0.75fr 1fr 0.85fr 1.15fr auto;
+}
+
 .dashboard-grid {
     display: grid;
     grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
@@ -658,6 +662,7 @@ select:focus {
 
 .income-item span,
 .expense-item span,
+.expense-item small,
 .bill-item span,
 .goal-item span,
 .category-item span,
@@ -665,6 +670,11 @@ select:focus {
     color: var(--muted);
     font-family: "Trebuchet MS", Verdana, sans-serif;
     font-size: 0.9rem;
+}
+
+.expense-item small {
+    display: block;
+    margin-top: 4px;
 }
 
 .income-item b,

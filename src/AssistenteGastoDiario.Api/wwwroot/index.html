@@ -205,6 +205,10 @@
                         <input name="amount" type="number" min="0.01" step="0.01" placeholder="0,00" required>
                     </label>
                     <label>
+                        Data
+                        <input name="spentOn" id="quick-spent-on" type="date">
+                    </label>
+                    <label>
                         Categoria
                         <select name="categoryId" id="category-select">
                             <option value="">Automatica</option>
@@ -219,6 +223,10 @@
                             <option value="1">Dinheiro</option>
                             <option value="6">Outro</option>
                         </select>
+                    </label>
+                    <label>
+                        Observacao
+                        <input name="notes" type="text" placeholder="Opcional" maxlength="300">
                     </label>
                     <button class="button button--primary" type="submit">Lancar despesa</button>
                 </form>
