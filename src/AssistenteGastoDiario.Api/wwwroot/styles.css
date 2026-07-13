@@ -238,6 +238,7 @@ select:focus {
 .settings-panel,
 .insights-panel,
 .monthly-panel,
+.export-panel,
 .quick-panel,
 .incomes-panel,
 .expenses-panel,
@@ -570,6 +571,12 @@ select:focus {
 
 .trend-bar--outgoing {
     background: linear-gradient(90deg, var(--rose), #a9443c);
+}
+
+.export-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .income-list,

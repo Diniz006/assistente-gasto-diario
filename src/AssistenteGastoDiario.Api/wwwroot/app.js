@@ -6,6 +6,7 @@ const state = {
     monthlySummaries: [],
     financialSetting: null,
     expenses: [],
+    incomes: [],
     categoriesById: new Map(),
     categories: [],
     incomesById: new Map(),
@@ -244,6 +245,10 @@ function bindForms() {
         await loadExpensesForCurrentCycle();
     });
 
+    $("#export-expenses").addEventListener("click", exportFilteredExpenses);
+    $("#export-incomes").addEventListener("click", exportCurrentCycleIncomes);
+    $("#export-monthly").addEventListener("click", exportMonthlySummaries);
+
     $("#goal-list").addEventListener("submit", async (event) => {
         if (!event.target.matches("[data-goal-contribution-form]")) {
             return;
@@ -444,6 +449,7 @@ async function loadDashboard() {
             renderInsights(null);
             renderMonthlyOverview(null, []);
             state.expenses = [];
+            state.incomes = [];
             renderIncomes([]);
             renderExpenses([]);
             renderOnboarding();
@@ -767,8 +773,86 @@ function renderTrendRow(item, maxTrend) {
     `;
 }
 
+function exportFilteredExpenses() {
+    const expenses = applyExpenseFilters(state.expenses);
+    if (!expenses.length) {
+        showToast("Nao ha despesas para exportar com os filtros atuais.");
+        return;
+    }
+
+    const rows = expenses.map((expense) => {
+        const category = state.categoriesById.get(expense.categoryId);
+        return {
+            Data: expense.spentOn,
+            Descricao: expense.description,
+            Categoria: category?.name || "",
+            Pagamento: paymentMethodLabel(expense.paymentMethod),
+            Valor: formatCsvMoney(expense.amount),
+            Observacao: expense.notes || ""
+        };
+    });
+
+    downloadCsv(`despesas-${todayIso()}.csv`, rows);
+    $("#export-status").textContent = `${expenses.length} despesas exportadas`;
+    showToast("CSV de despesas baixado.");
+}
+
+function exportCurrentCycleIncomes() {
+    if (!state.incomes.length) {
+        showToast("Nao ha rendas do ciclo para exportar.");
+        return;
+    }
+
+    const rows = state.incomes.map((income) => {
+        const category = income.categoryId ? state.categoriesById.get(income.categoryId) : null;
+        return {
+            Data: income.receivedOn,
+            Descricao: income.description,
+            Categoria: category?.name || "",
+            Valor: formatCsvMoney(income.amount),
+            Recorrente: income.isRecurring ? "Sim" : "Nao",
+            Observacao: income.notes || ""
+        };
+    });
+
+    downloadCsv(`rendas-${todayIso()}.csv`, rows);
+    $("#export-status").textContent = `${state.incomes.length} rendas exportadas`;
+    showToast("CSV de rendas baixado.");
+}
+
+function exportMonthlySummaries() {
+    if (!state.monthlySummaries.length) {
+        showToast("Nao ha resumo mensal para exportar.");
+        return;
+    }
+
+    const rows = state.monthlySummaries.map((row) => {
+        const summary = row.summary;
+        const investedTotal = Math.max(Number(summary.goalContributedTotal || 0), Number(summary.goalPlannedTotal || 0));
+        const outgoingTotal = Number(summary.fixedBillsTotal || 0) + Number(summary.expensesTotal || 0);
+
+        return {
+            Mes: monthLabel(row.month),
+            Entrada: formatCsvMoney(summary.incomeTotal),
+            Guardado: formatCsvMoney(investedTotal),
+            Saida: formatCsvMoney(outgoingTotal),
+            ContasFixas: formatCsvMoney(summary.fixedBillsTotal),
+            Despesas: formatCsvMoney(summary.expensesTotal),
+            MetasPlanejadas: formatCsvMoney(summary.goalPlannedTotal),
+            MetasContribuidas: formatCsvMoney(summary.goalContributedTotal),
+            Saldo: formatCsvMoney(summary.availableBalance),
+            LimiteDiario: formatCsvMoney(summary.safeDailyLimit)
+        };
+    });
+
+    downloadCsv(`resumo-mensal-${todayIso()}.csv`, rows);
+    $("#export-status").textContent = `${state.monthlySummaries.length} meses exportados`;
+    showToast("CSV de resumo mensal baixado.");
+}
+
 async function loadIncomesForCurrentCycle() {
     if (!state.dashboard?.financialCycle) {
+        state.incomes = [];
         renderIncomes([]);
         return;
     }
@@ -780,6 +864,7 @@ async function loadIncomesForCurrentCycle() {
         endDate: cycle.cycleEndDate
     });
     const incomes = await api(`/api/me/incomes?${params.toString()}`);
+    state.incomes = incomes;
     renderIncomes(incomes);
     $("#incomes-status").textContent = `${incomes.length} entrada${incomes.length === 1 ? "" : "s"}`;
     renderOnboarding();
@@ -1586,6 +1671,36 @@ function monthLabel(month) {
     }).format(new Date(year, monthNumber - 1, 1));
 
     return label.replace(".", "");
+}
+
+function downloadCsv(filename, rows) {
+    if (!rows.length) {
+        return;
+    }
+
+    const headers = Object.keys(rows[0]);
+    const lines = [
+        headers.map(escapeCsvCell).join(";"),
+        ...rows.map((row) => headers.map((header) => escapeCsvCell(row[header])).join(";"))
+    ];
+    const blob = new Blob([`\uFEFF${lines.join("\r\n")}`], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+}
+
+function escapeCsvCell(value) {
+    const text = String(value ?? "");
+    return `"${text.replaceAll('"', '""')}"`;
+}
+
+function formatCsvMoney(value) {
+    return Number(value || 0).toFixed(2).replace(".", ",");
 }
 
 function showToast(message) {
