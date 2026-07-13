@@ -3,6 +3,7 @@ const state = {
     user: JSON.parse(localStorage.getItem("agd.user") || "null"),
     dashboard: null,
     cycleSummary: null,
+    monthlySummaries: [],
     categoriesById: new Map(),
     categories: [],
     incomesById: new Map(),
@@ -214,6 +215,12 @@ function bindForms() {
         await loadCategories();
     });
 
+    $("#monthly-summary-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const data = Object.fromEntries(new FormData(event.currentTarget));
+        await loadMonthlyOverview(data.referenceMonth || currentMonthIso());
+    });
+
     $("#goal-list").addEventListener("submit", async (event) => {
         if (!event.target.matches("[data-goal-contribution-form]")) {
             return;
@@ -366,6 +373,7 @@ async function renderSession() {
 
     $("#user-greeting").textContent = `Ola, ${state.user?.name || "vamos nessa"}`;
     $("#income-received-on").value = todayIso();
+    $("#monthly-reference").value = currentMonthIso();
     try {
         await loadCategories();
         await loadDashboard();
@@ -400,6 +408,7 @@ async function loadDashboard() {
         const dashboard = await api("/api/me/dashboard");
         renderDashboard(dashboard);
         await loadCycleSummary();
+        await loadMonthlyOverview($("#monthly-reference").value || currentMonthIso(), true);
         await loadIncomesForCurrentCycle();
         await loadExpensesForCurrentCycle();
     } catch (error) {
@@ -407,6 +416,7 @@ async function loadDashboard() {
             $("#setup-card").classList.remove("hidden");
             renderDashboard(null);
             renderInsights(null);
+            renderMonthlyOverview(null, []);
             renderIncomes([]);
             renderExpenses([]);
             renderOnboarding();
@@ -581,6 +591,112 @@ function renderInsights(summary) {
             </div>
         `;
     }).join("");
+}
+
+async function loadMonthlyOverview(referenceMonth = currentMonthIso(), silent = false) {
+    if (!silent) {
+        $("#monthly-status").textContent = "Atualizando...";
+    }
+
+    const months = buildMonthReferences(referenceMonth, 4);
+    const rows = await Promise.all(months.map(async (month) => {
+        const summary = await api(`/api/me/cycle-summary?referenceDate=${monthReferenceDate(month)}`);
+        return {
+            month,
+            summary
+        };
+    }));
+
+    state.monthlySummaries = rows;
+    renderMonthlyOverview(referenceMonth, rows);
+}
+
+function renderMonthlyOverview(referenceMonth, rows) {
+    const cards = $("#monthly-cards");
+    const trend = $("#monthly-trend");
+
+    if (!referenceMonth || !rows.length) {
+        $("#monthly-status").textContent = "";
+        cards.innerHTML = '<div class="empty-state">Configure o ciclo para comparar seus meses.</div>';
+        trend.innerHTML = "";
+        return;
+    }
+
+    const selected = rows.find((row) => row.month === referenceMonth) || rows[rows.length - 1];
+    const summary = selected.summary;
+    const investedTotal = Math.max(Number(summary.goalContributedTotal || 0), Number(summary.goalPlannedTotal || 0));
+    const outgoingTotal = Number(summary.fixedBillsTotal || 0) + Number(summary.expensesTotal || 0);
+    const incomeTotal = Number(summary.incomeTotal || 0);
+    const availableBalance = Number(summary.availableBalance || 0);
+    const savedPercent = incomeTotal > 0 ? Math.round((investedTotal / incomeTotal) * 100) : 0;
+    const spentPercent = incomeTotal > 0 ? Math.round((outgoingTotal / incomeTotal) * 100) : 0;
+
+    $("#monthly-status").textContent = monthLabel(referenceMonth);
+    cards.innerHTML = [
+        { label: "Entrou", value: incomeTotal, detail: `${summary.incomeCount} renda${summary.incomeCount === 1 ? "" : "s"}`, kind: "income" },
+        { label: "Ficou guardado", value: investedTotal, detail: `${savedPercent}% da entrada`, kind: "invested" },
+        { label: "Saiu", value: outgoingTotal, detail: `${spentPercent}% da entrada`, kind: "outgoing" },
+        { label: "Saldo do ciclo", value: availableBalance, detail: `${summary.financialCycle.daysRemaining} dia${summary.financialCycle.daysRemaining === 1 ? "" : "s"} restantes`, kind: "balance" }
+    ].map((item) => `
+        <article class="monthly-card monthly-card--${item.kind}">
+            <span>${item.label}</span>
+            <strong>${currency.format(item.value)}</strong>
+            <small>${item.detail}</small>
+        </article>
+    `).join("");
+
+    const trendItems = rows.map((row) => {
+        const rowSummary = row.summary;
+        const rowIncome = Number(rowSummary.incomeTotal || 0);
+        const rowInvested = Math.max(Number(rowSummary.goalContributedTotal || 0), Number(rowSummary.goalPlannedTotal || 0));
+        const rowOutgoing = Number(rowSummary.fixedBillsTotal || 0) + Number(rowSummary.expensesTotal || 0);
+
+        return {
+            month: row.month,
+            income: rowIncome,
+            invested: rowInvested,
+            outgoing: rowOutgoing,
+            balance: Number(rowSummary.availableBalance || 0)
+        };
+    });
+    const maxTrend = Math.max(...trendItems.flatMap((item) => [item.income, item.invested, item.outgoing]), 1);
+
+    trend.innerHTML = `
+        <div class="section-title section-title--compact">
+            <div>
+                <p class="muted">Ultimos meses</p>
+                <h4>Tendencia financeira</h4>
+            </div>
+        </div>
+        <div class="trend-list">
+            ${trendItems.map((item) => renderTrendRow(item, maxTrend)).join("")}
+        </div>
+    `;
+}
+
+function renderTrendRow(item, maxTrend) {
+    const incomePercent = Math.max(2, Math.round((item.income / maxTrend) * 100));
+    const investedPercent = Math.max(2, Math.round((item.invested / maxTrend) * 100));
+    const outgoingPercent = Math.max(2, Math.round((item.outgoing / maxTrend) * 100));
+
+    return `
+        <article class="trend-row">
+            <div class="trend-row__header">
+                <strong>${monthLabel(item.month)}</strong>
+                <span>Saldo ${currency.format(item.balance)}</span>
+            </div>
+            <div class="trend-bars" aria-label="Tendencia de ${escapeHtml(monthLabel(item.month))}">
+                <span class="trend-bar trend-bar--income" style="width: ${incomePercent}%"></span>
+                <span class="trend-bar trend-bar--invested" style="width: ${investedPercent}%"></span>
+                <span class="trend-bar trend-bar--outgoing" style="width: ${outgoingPercent}%"></span>
+            </div>
+            <div class="trend-row__legend">
+                <span>Entrou ${currency.format(item.income)}</span>
+                <span>Guardou ${currency.format(item.invested)}</span>
+                <span>Saiu ${currency.format(item.outgoing)}</span>
+            </div>
+        </article>
+    `;
 }
 
 async function loadIncomesForCurrentCycle() {
@@ -1248,6 +1364,32 @@ function todayIso() {
     const now = new Date();
     const offset = now.getTimezoneOffset() * 60000;
     return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+}
+
+function currentMonthIso() {
+    return todayIso().slice(0, 7);
+}
+
+function monthReferenceDate(month) {
+    return `${month}-15`;
+}
+
+function buildMonthReferences(referenceMonth, count) {
+    const [year, month] = referenceMonth.split("-").map(Number);
+    return Array.from({ length: count }, (_, index) => {
+        const date = new Date(year, month - 1 - (count - 1 - index), 1);
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    });
+}
+
+function monthLabel(month) {
+    const [year, monthNumber] = month.split("-").map(Number);
+    const label = new Intl.DateTimeFormat("pt-BR", {
+        month: "short",
+        year: "numeric"
+    }).format(new Date(year, monthNumber - 1, 1));
+
+    return label.replace(".", "");
 }
 
 function showToast(message) {

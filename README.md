@@ -16,6 +16,7 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
   - ver dashboard com limite diario seguro;
   - visualizar graficos do ciclo com entradas, dinheiro guardado e saidas;
   - visualizar gastos por categoria;
+  - comparar resumo mensal com tendencia dos ultimos meses;
   - cadastrar, listar, editar e excluir rendas do ciclo;
   - criar, editar e ocultar categorias;
   - editar registros por modal interno no frontend;

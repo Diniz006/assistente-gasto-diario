@@ -141,6 +141,27 @@
                 </div>
             </section>
 
+            <section class="panel monthly-panel">
+                <div class="section-title">
+                    <div>
+                        <p class="muted">Resumo do mes</p>
+                        <h3>Compare sua evolucao</h3>
+                    </div>
+                    <span id="monthly-status" class="status"></span>
+                </div>
+                <form class="monthly-filter" id="monthly-summary-form">
+                    <label>
+                        Mes de referencia
+                        <input name="referenceMonth" id="monthly-reference" type="month" required>
+                    </label>
+                    <button class="button button--ghost" type="submit">Atualizar resumo</button>
+                </form>
+                <div class="monthly-cards" id="monthly-cards">
+                    <div class="empty-state">Escolha um mes para ver entradas, saidas e dinheiro guardado.</div>
+                </div>
+                <div class="monthly-trend" id="monthly-trend"></div>
+            </section>
+
             <section class="panel quick-panel">
                 <div class="section-title">
                     <div>

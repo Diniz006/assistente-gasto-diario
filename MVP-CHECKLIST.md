@@ -10,6 +10,7 @@
 - Calculo de ciclo financeiro.
 - Calculo de limite diario seguro.
 - Graficos do ciclo e gastos por categoria no frontend.
+- Resumo mensal com comparativo dos ultimos meses no frontend.
 - CRUD backend de categorias, rendas, contas fixas, despesas e metas.
 - Lancamento rapido de despesa.
 - Contribuicoes para metas no backend.
