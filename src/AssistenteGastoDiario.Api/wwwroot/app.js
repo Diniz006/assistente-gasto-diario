@@ -4,7 +4,8 @@ const state = {
     dashboard: null,
     categoriesById: new Map(),
     expenseCategories: [],
-    billCategories: []
+    billCategories: [],
+    goalCategories: []
 };
 
 const currency = new Intl.NumberFormat("pt-BR", {
@@ -116,6 +117,52 @@ function bindForms() {
         await loadFixedBills();
     });
 
+    $("#financial-goal-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const data = Object.fromEntries(new FormData(form));
+        $("#goals-status").textContent = "Salvando...";
+        await api("/api/me/financial-goals", {
+            method: "POST",
+            body: {
+                categoryId: data.categoryId || null,
+                name: data.name,
+                targetAmount: Number(data.targetAmount),
+                currentAmount: Number(data.currentAmount || 0),
+                monthlyPlannedAmount: Number(data.monthlyPlannedAmount || 0),
+                priority: 2,
+                status: 1
+            }
+        });
+        form.reset();
+        form.elements.currentAmount.value = "0";
+        form.elements.monthlyPlannedAmount.value = "0";
+        showToast(`${data.name} entrou nas suas metas.`);
+        await loadDashboard();
+        await loadFinancialGoals();
+    });
+
+    $("#goal-list").addEventListener("submit", async (event) => {
+        if (!event.target.matches("[data-goal-contribution-form]")) {
+            return;
+        }
+
+        event.preventDefault();
+        const form = event.target;
+        const data = Object.fromEntries(new FormData(form));
+        const goalId = form.dataset.goalId;
+        await api(`/api/me/financial-goals/${goalId}/contributions`, {
+            method: "POST",
+            body: {
+                amount: Number(data.amount),
+                notes: data.notes || null
+            }
+        });
+        showToast("Contribuicao registrada. Meta e limite recalculados.");
+        await loadDashboard();
+        await loadFinancialGoals();
+    });
+
     $("#logout-button").addEventListener("click", () => {
         state.token = null;
         state.user = null;
@@ -153,6 +200,7 @@ async function renderSession() {
     await loadCategories();
     await loadDashboard();
     await loadFixedBills();
+    await loadFinancialGoals();
 }
 
 async function loadDashboard() {
@@ -176,6 +224,7 @@ async function loadCategories() {
     state.categoriesById.clear();
     state.expenseCategories = await api("/api/me/categories?type=2");
     state.billCategories = await api("/api/me/categories?type=3");
+    state.goalCategories = await api("/api/me/categories?type=4");
 
     const select = $("#category-select");
     select.innerHTML = '<option value="">Automatica</option>';
@@ -199,6 +248,18 @@ async function loadCategories() {
             option.value = category.id;
             option.textContent = category.name;
             billSelect.appendChild(option);
+        });
+
+    const goalSelect = $("#goal-category-select");
+    goalSelect.innerHTML = '<option value="">Sem categoria</option>';
+    state.goalCategories
+        .filter((category) => category.isActive)
+        .forEach((category) => {
+            state.categoriesById.set(category.id, category);
+            const option = document.createElement("option");
+            option.value = category.id;
+            option.textContent = category.name;
+            goalSelect.appendChild(option);
         });
 }
 
@@ -304,6 +365,62 @@ function renderFixedBills(bills) {
                 <span>Vence dia ${bill.dueDay}${category ? ` &middot; ${escapeHtml(category.name)}` : ""}</span>
             </div>
             <b>${currency.format(bill.amount)}</b>
+        `;
+        list.appendChild(item);
+    });
+}
+
+async function loadFinancialGoals() {
+    $("#goals-status").textContent = "Atualizando...";
+    const goals = await api("/api/me/financial-goals");
+    renderFinancialGoals(goals);
+    $("#goals-status").textContent = `${goals.length} meta${goals.length === 1 ? "" : "s"}`;
+}
+
+function renderFinancialGoals(goals) {
+    const list = $("#goal-list");
+    list.innerHTML = "";
+
+    if (!goals.length) {
+        list.innerHTML = '<div class="empty-state">Crie uma meta para acompanhar seu progresso e reservar dinheiro sem perder o limite do dia.</div>';
+        $("#goals-status").textContent = "";
+        return;
+    }
+
+    const sortedGoals = [...goals].sort((left, right) => left.status - right.status || right.priority - left.priority || left.name.localeCompare(right.name));
+    sortedGoals.forEach((goal) => {
+        const category = goal.categoryId ? state.categoriesById.get(goal.categoryId) : null;
+        const percent = Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100));
+        const remaining = Math.max(0, goal.targetAmount - goal.currentAmount);
+        const completed = goal.status === 2 || percent >= 100;
+        const item = document.createElement("article");
+        item.className = "goal-item";
+        item.innerHTML = `
+            <div class="goal-item__header">
+                <div>
+                    <strong>${escapeHtml(goal.name)}</strong>
+                    <span>${category ? `${escapeHtml(category.name)} &middot; ` : ""}${completed ? "Concluida" : `${percent}% concluida`}</span>
+                </div>
+                <b>${currency.format(goal.currentAmount)} / ${currency.format(goal.targetAmount)}</b>
+            </div>
+            <div class="progress" aria-label="Progresso da meta ${escapeHtml(goal.name)}">
+                <span style="width: ${percent}%"></span>
+            </div>
+            <div class="goal-item__details">
+                <span>Falta ${currency.format(remaining)}</span>
+                <span>Plano mensal ${currency.format(goal.monthlyPlannedAmount)}</span>
+            </div>
+            <form class="goal-contribution-form" data-goal-contribution-form data-goal-id="${goal.id}">
+                <label>
+                    Contribuir
+                    <input name="amount" type="number" min="0.01" step="0.01" placeholder="0,00" required ${completed ? "disabled" : ""}>
+                </label>
+                <label>
+                    Nota
+                    <input name="notes" type="text" placeholder="Opcional" maxlength="200" ${completed ? "disabled" : ""}>
+                </label>
+                <button class="button button--ghost" type="submit" ${completed ? "disabled" : ""}>Guardar</button>
+            </form>
         `;
         list.appendChild(item);
     });

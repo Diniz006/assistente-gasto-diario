@@ -18,39 +18,37 @@
 - Tela de lancamento rapido.
 - Historico de despesas recentes.
 - Cadastro/listagem de contas fixas.
+- Cadastro/listagem de metas financeiras no frontend.
+- Contribuicoes para metas no frontend.
 - Scripts locais para iniciar a API.
 
 ## Proximos passos recomendados
 
-1. Metas no frontend:
-   - criar meta;
-   - listar progresso;
-   - registrar contribuicao.
-
-2. Edicao e exclusao:
+1. Edicao e exclusao:
    - editar/excluir despesa;
    - editar/remover conta fixa;
+   - editar/remover meta;
    - revisar impacto no dashboard.
 
-3. Rendas no frontend:
+2. Rendas no frontend:
    - registrar salario/entrada;
    - listar entradas do ciclo;
    - decidir quando usar renda padrao versus renda lancada.
 
-4. Onboarding guiado:
+3. Onboarding guiado:
    - renda mensal;
    - ciclo;
    - contas fixas;
    - primeira meta;
    - primeiro lancamento.
 
-5. Qualidade:
+4. Qualidade:
    - testes automatizados;
    - tratamento padronizado de erros;
    - validacoes melhores no frontend;
    - estados de loading/erro mais claros.
 
-6. Entrega:
+5. Entrega:
    - revisar textos finais;
    - preparar build/publicacao;
    - decidir ambiente de deploy.

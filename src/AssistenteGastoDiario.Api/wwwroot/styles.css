@@ -218,7 +218,8 @@ select:focus {
 .summary-card,
 .quick-panel,
 .expenses-panel,
-.bills-panel {
+.bills-panel,
+.goals-panel {
     padding: 26px;
 }
 
@@ -287,12 +288,14 @@ select:focus {
 }
 
 .expense-list,
-.bill-list {
+.bill-list,
+.goal-list {
     display: grid;
     gap: 10px;
 }
 
-.bill-form {
+.bill-form,
+.goal-form {
     display: grid;
     grid-template-columns: 1.4fr 0.8fr 0.7fr 1fr auto;
     align-items: end;
@@ -300,8 +303,13 @@ select:focus {
     margin-bottom: 18px;
 }
 
+.goal-form {
+    grid-template-columns: 1.25fr 0.75fr 0.75fr 0.75fr 1fr auto;
+}
+
 .expense-item,
-.bill-item {
+.bill-item,
+.goal-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -312,8 +320,14 @@ select:focus {
     background: rgba(255, 255, 255, 0.58);
 }
 
+.goal-item {
+    display: grid;
+    align-items: stretch;
+}
+
 .expense-item strong,
-.bill-item strong {
+.bill-item strong,
+.goal-item strong {
     display: block;
     margin-bottom: 4px;
     font-size: 1.05rem;
@@ -321,6 +335,7 @@ select:focus {
 
 .expense-item span,
 .bill-item span,
+.goal-item span,
 .empty-state {
     color: var(--muted);
     font-family: "Trebuchet MS", Verdana, sans-serif;
@@ -328,7 +343,8 @@ select:focus {
 }
 
 .expense-item b,
-.bill-item b {
+.bill-item b,
+.goal-item b {
     white-space: nowrap;
     color: var(--rose);
     font-family: "Trebuchet MS", Verdana, sans-serif;
@@ -337,6 +353,52 @@ select:focus {
 
 .bill-item b {
     color: var(--brand-strong);
+}
+
+.goal-item b {
+    color: var(--brand-strong);
+}
+
+.goal-item__header,
+.goal-item__details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.goal-item__details {
+    margin-top: 10px;
+}
+
+.progress {
+    height: 12px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(24, 34, 29, 0.1);
+}
+
+.progress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--sun), var(--brand));
+}
+
+.goal-contribution-form {
+    display: grid;
+    grid-template-columns: minmax(140px, 0.6fr) 1fr auto;
+    align-items: end;
+    gap: 12px;
+    margin-top: 14px;
+    border-top: 1px solid rgba(24, 34, 29, 0.1);
+    padding-top: 14px;
+}
+
+.button:disabled,
+input:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
 }
 
 .empty-state {
@@ -369,7 +431,9 @@ select:focus {
     .dashboard-grid,
     .setup-grid,
     .quick-form,
-    .bill-form {
+    .bill-form,
+    .goal-form,
+    .goal-contribution-form {
         grid-template-columns: 1fr;
     }
 
@@ -379,7 +443,9 @@ select:focus {
     }
 
     .expense-item,
-    .bill-item {
+    .bill-item,
+    .goal-item__header,
+    .goal-item__details {
         align-items: flex-start;
         flex-direction: column;
     }

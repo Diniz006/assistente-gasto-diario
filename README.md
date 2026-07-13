@@ -15,7 +15,8 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
   - ver dashboard com limite diario seguro;
   - lancar despesa rapidamente;
   - ver historico de despesas do ciclo;
-  - cadastrar e listar contas fixas.
+  - cadastrar e listar contas fixas;
+  - criar metas financeiras e registrar contribuicoes.
 
 ## Estrutura
 
