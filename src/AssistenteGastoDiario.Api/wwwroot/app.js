@@ -3,6 +3,9 @@ const state = {
     user: JSON.parse(localStorage.getItem("agd.user") || "null"),
     dashboard: null,
     categoriesById: new Map(),
+    expensesById: new Map(),
+    fixedBillsById: new Map(),
+    goalsById: new Map(),
     expenseCategories: [],
     billCategories: [],
     goalCategories: []
@@ -163,12 +166,62 @@ function bindForms() {
         await loadFinancialGoals();
     });
 
+    $("#expense-list").addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-expense-action]");
+        if (!button) {
+            return;
+        }
+
+        const expense = state.expensesById.get(button.dataset.expenseId);
+        if (!expense) {
+            return;
+        }
+
+        if (button.dataset.expenseAction === "edit") {
+            await editExpense(expense);
+        } else if (button.dataset.expenseAction === "delete") {
+            await deleteExpense(expense);
+        }
+    });
+
+    $("#bill-list").addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-bill-action]");
+        if (!button) {
+            return;
+        }
+
+        const bill = state.fixedBillsById.get(button.dataset.billId);
+        if (!bill) {
+            return;
+        }
+
+        if (button.dataset.billAction === "edit") {
+            await editFixedBill(bill);
+        } else if (button.dataset.billAction === "delete") {
+            await deleteFixedBill(bill);
+        }
+    });
+
+    $("#goal-list").addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-goal-action]");
+        if (!button) {
+            return;
+        }
+
+        const goal = state.goalsById.get(button.dataset.goalId);
+        if (!goal) {
+            return;
+        }
+
+        if (button.dataset.goalAction === "edit") {
+            await editFinancialGoal(goal);
+        } else if (button.dataset.goalAction === "delete") {
+            await deleteFinancialGoal(goal);
+        }
+    });
+
     $("#logout-button").addEventListener("click", () => {
-        state.token = null;
-        state.user = null;
-        localStorage.removeItem("agd.token");
-        localStorage.removeItem("agd.user");
-        renderSession();
+        clearSession();
     });
 }
 
@@ -197,10 +250,32 @@ async function renderSession() {
     }
 
     $("#user-greeting").textContent = `Ola, ${state.user?.name || "vamos nessa"}`;
-    await loadCategories();
-    await loadDashboard();
-    await loadFixedBills();
-    await loadFinancialGoals();
+    try {
+        await loadCategories();
+        await loadDashboard();
+        await loadFixedBills();
+        await loadFinancialGoals();
+    } catch (error) {
+        if (error.status === 401) {
+            clearSession("Sua sessao expirou. Entre novamente para continuar.");
+            return;
+        }
+
+        throw error;
+    }
+}
+
+function clearSession(message) {
+    state.token = null;
+    state.user = null;
+    localStorage.removeItem("agd.token");
+    localStorage.removeItem("agd.user");
+    authPanel.classList.remove("hidden");
+    appPanel.classList.add("hidden");
+
+    if (message) {
+        showToast(message);
+    }
 }
 
 async function loadDashboard() {
@@ -308,6 +383,7 @@ async function loadExpensesForCurrentCycle() {
 function renderExpenses(expenses) {
     const list = $("#expense-list");
     list.innerHTML = "";
+    state.expensesById.clear();
 
     if (!expenses.length) {
         list.innerHTML = '<div class="empty-state">Quando voce lancar despesas, elas aparecem aqui.</div>';
@@ -323,6 +399,7 @@ function renderExpenses(expenses) {
     });
 
     recentExpenses.slice(0, 8).forEach((expense) => {
+        state.expensesById.set(expense.id, expense);
         const category = state.categoriesById.get(expense.categoryId);
         const item = document.createElement("article");
         item.className = "expense-item";
@@ -331,7 +408,13 @@ function renderExpenses(expenses) {
                 <strong>${escapeHtml(expense.description)}</strong>
                 <span>${formatDate(expense.spentOn)}${category ? ` &middot; ${escapeHtml(category.name)}` : ""}</span>
             </div>
-            <b>${currency.format(expense.amount)}</b>
+            <div class="item-side">
+                <b>${currency.format(expense.amount)}</b>
+                <div class="item-actions">
+                    <button class="button button--tiny" type="button" data-expense-action="edit" data-expense-id="${expense.id}">Editar</button>
+                    <button class="button button--tiny button--danger" type="button" data-expense-action="delete" data-expense-id="${expense.id}">Excluir</button>
+                </div>
+            </div>
         `;
         list.appendChild(item);
     });
@@ -347,6 +430,7 @@ async function loadFixedBills() {
 function renderFixedBills(bills) {
     const list = $("#bill-list");
     list.innerHTML = "";
+    state.fixedBillsById.clear();
 
     if (!bills.length) {
         list.innerHTML = '<div class="empty-state">Cadastre suas contas fixas para o limite diario ficar mais realista.</div>';
@@ -356,6 +440,7 @@ function renderFixedBills(bills) {
 
     const sortedBills = [...bills].sort((left, right) => left.dueDay - right.dueDay || left.name.localeCompare(right.name));
     sortedBills.forEach((bill) => {
+        state.fixedBillsById.set(bill.id, bill);
         const category = bill.categoryId ? state.categoriesById.get(bill.categoryId) : null;
         const item = document.createElement("article");
         item.className = "bill-item";
@@ -364,7 +449,13 @@ function renderFixedBills(bills) {
                 <strong>${escapeHtml(bill.name)}</strong>
                 <span>Vence dia ${bill.dueDay}${category ? ` &middot; ${escapeHtml(category.name)}` : ""}</span>
             </div>
-            <b>${currency.format(bill.amount)}</b>
+            <div class="item-side">
+                <b>${currency.format(bill.amount)}</b>
+                <div class="item-actions">
+                    <button class="button button--tiny" type="button" data-bill-action="edit" data-bill-id="${bill.id}">Editar</button>
+                    <button class="button button--tiny button--danger" type="button" data-bill-action="delete" data-bill-id="${bill.id}">Excluir</button>
+                </div>
+            </div>
         `;
         list.appendChild(item);
     });
@@ -380,6 +471,7 @@ async function loadFinancialGoals() {
 function renderFinancialGoals(goals) {
     const list = $("#goal-list");
     list.innerHTML = "";
+    state.goalsById.clear();
 
     if (!goals.length) {
         list.innerHTML = '<div class="empty-state">Crie uma meta para acompanhar seu progresso e reservar dinheiro sem perder o limite do dia.</div>';
@@ -389,6 +481,7 @@ function renderFinancialGoals(goals) {
 
     const sortedGoals = [...goals].sort((left, right) => left.status - right.status || right.priority - left.priority || left.name.localeCompare(right.name));
     sortedGoals.forEach((goal) => {
+        state.goalsById.set(goal.id, goal);
         const category = goal.categoryId ? state.categoriesById.get(goal.categoryId) : null;
         const percent = Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100));
         const remaining = Math.max(0, goal.targetAmount - goal.currentAmount);
@@ -401,7 +494,13 @@ function renderFinancialGoals(goals) {
                     <strong>${escapeHtml(goal.name)}</strong>
                     <span>${category ? `${escapeHtml(category.name)} &middot; ` : ""}${completed ? "Concluida" : `${percent}% concluida`}</span>
                 </div>
-                <b>${currency.format(goal.currentAmount)} / ${currency.format(goal.targetAmount)}</b>
+                <div class="item-side">
+                    <b>${currency.format(goal.currentAmount)} / ${currency.format(goal.targetAmount)}</b>
+                    <div class="item-actions">
+                        <button class="button button--tiny" type="button" data-goal-action="edit" data-goal-id="${goal.id}">Editar</button>
+                        <button class="button button--tiny button--danger" type="button" data-goal-action="delete" data-goal-id="${goal.id}">Excluir</button>
+                    </div>
+                </div>
             </div>
             <div class="progress" aria-label="Progresso da meta ${escapeHtml(goal.name)}">
                 <span style="width: ${percent}%"></span>
@@ -424,6 +523,164 @@ function renderFinancialGoals(goals) {
         `;
         list.appendChild(item);
     });
+}
+
+async function editExpense(expense) {
+    const description = prompt("Descricao da despesa:", expense.description);
+    if (description === null) {
+        return;
+    }
+
+    const amount = promptDecimal("Valor da despesa:", expense.amount, 0.01);
+    if (amount === null) {
+        return;
+    }
+
+    await api(`/api/me/expenses/${expense.id}`, {
+        method: "PUT",
+        body: {
+            categoryId: expense.categoryId,
+            description,
+            amount,
+            spentOn: expense.spentOn,
+            paymentMethod: expense.paymentMethod,
+            notes: expense.notes
+        }
+    });
+    showToast("Despesa atualizada. Limite recalculado.");
+    await loadDashboard();
+}
+
+async function deleteExpense(expense) {
+    if (!confirm(`Excluir a despesa "${expense.description}"?`)) {
+        return;
+    }
+
+    await api(`/api/me/expenses/${expense.id}`, { method: "DELETE" });
+    showToast("Despesa excluida. Limite recalculado.");
+    await loadDashboard();
+}
+
+async function editFixedBill(bill) {
+    const name = prompt("Nome da conta fixa:", bill.name);
+    if (name === null) {
+        return;
+    }
+
+    const amount = promptDecimal("Valor da conta:", bill.amount, 0.01);
+    if (amount === null) {
+        return;
+    }
+
+    const dueDay = promptInteger("Dia de vencimento:", bill.dueDay, 1, 31);
+    if (dueDay === null) {
+        return;
+    }
+
+    await api(`/api/me/fixed-bills/${bill.id}`, {
+        method: "PUT",
+        body: {
+            categoryId: bill.categoryId,
+            name,
+            amount,
+            dueDay,
+            status: bill.status,
+            paymentDate: bill.paymentDate,
+            isRecurringMonthly: bill.isRecurringMonthly,
+            autoIncludeInCycle: bill.autoIncludeInCycle,
+            notes: bill.notes
+        }
+    });
+    showToast("Conta fixa atualizada. Limite recalculado.");
+    await loadDashboard();
+    await loadFixedBills();
+}
+
+async function deleteFixedBill(bill) {
+    if (!confirm(`Excluir a conta fixa "${bill.name}"?`)) {
+        return;
+    }
+
+    await api(`/api/me/fixed-bills/${bill.id}`, { method: "DELETE" });
+    showToast("Conta fixa excluida. Limite recalculado.");
+    await loadDashboard();
+    await loadFixedBills();
+}
+
+async function editFinancialGoal(goal) {
+    const name = prompt("Nome da meta:", goal.name);
+    if (name === null) {
+        return;
+    }
+
+    const targetAmount = promptDecimal("Valor alvo:", goal.targetAmount, 0.01);
+    if (targetAmount === null) {
+        return;
+    }
+
+    const monthlyPlannedAmount = promptDecimal("Quanto guardar por mes:", goal.monthlyPlannedAmount);
+    if (monthlyPlannedAmount === null) {
+        return;
+    }
+
+    await api(`/api/me/financial-goals/${goal.id}`, {
+        method: "PUT",
+        body: {
+            categoryId: goal.categoryId,
+            name,
+            targetAmount,
+            currentAmount: goal.currentAmount,
+            monthlyPlannedAmount,
+            targetDate: goal.targetDate,
+            priority: goal.priority,
+            status: goal.status,
+            notes: goal.notes
+        }
+    });
+    showToast("Meta atualizada. Painel recalculado.");
+    await loadDashboard();
+    await loadFinancialGoals();
+}
+
+async function deleteFinancialGoal(goal) {
+    if (!confirm(`Excluir a meta "${goal.name}"?`)) {
+        return;
+    }
+
+    await api(`/api/me/financial-goals/${goal.id}`, { method: "DELETE" });
+    showToast("Meta excluida. Painel recalculado.");
+    await loadDashboard();
+    await loadFinancialGoals();
+}
+
+function promptDecimal(message, currentValue, min = 0) {
+    const value = prompt(message, String(currentValue).replace(".", ","));
+    if (value === null) {
+        return null;
+    }
+
+    const parsed = Number(value.replace(",", "."));
+    if (!Number.isFinite(parsed) || parsed < min) {
+        showToast("Valor invalido. Tente novamente.");
+        return null;
+    }
+
+    return parsed;
+}
+
+function promptInteger(message, currentValue, min, max) {
+    const value = prompt(message, String(currentValue));
+    if (value === null) {
+        return null;
+    }
+
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < min || parsed > max) {
+        showToast(`Informe um numero entre ${min} e ${max}.`);
+        return null;
+    }
+
+    return parsed;
 }
 
 async function api(path, options = {}) {

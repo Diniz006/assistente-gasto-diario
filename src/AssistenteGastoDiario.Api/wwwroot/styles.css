@@ -174,6 +174,18 @@ select:focus {
     background: rgba(31, 111, 74, 0.09);
 }
 
+.button--tiny {
+    padding: 8px 11px;
+    color: var(--brand-strong);
+    background: rgba(31, 111, 74, 0.1);
+    font-size: 0.78rem;
+}
+
+.button--danger {
+    color: #8b2f28;
+    background: rgba(217, 107, 95, 0.14);
+}
+
 .hidden {
     display: none !important;
 }
@@ -351,6 +363,19 @@ select:focus {
     font-size: 1.02rem;
 }
 
+.item-side {
+    display: grid;
+    justify-items: end;
+    gap: 8px;
+}
+
+.item-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
 .bill-item b {
     color: var(--brand-strong);
 }
@@ -445,8 +470,14 @@ input:disabled {
     .expense-item,
     .bill-item,
     .goal-item__header,
-    .goal-item__details {
+    .goal-item__details,
+    .item-side {
         align-items: flex-start;
         flex-direction: column;
+        justify-items: start;
+    }
+
+    .item-actions {
+        justify-content: flex-start;
     }
 }

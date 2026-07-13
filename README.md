@@ -16,7 +16,8 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
   - lancar despesa rapidamente;
   - ver historico de despesas do ciclo;
   - cadastrar e listar contas fixas;
-  - criar metas financeiras e registrar contribuicoes.
+  - criar metas financeiras e registrar contribuicoes;
+  - editar e excluir despesas, contas fixas e metas pelo frontend.
 
 ## Estrutura
 
@@ -84,7 +85,8 @@ Se estiver usando o SDK global instalado em `C:\Program Files\dotnet`, o projeto
 3. Configure renda mensal e ciclo.
 4. Cadastre uma conta fixa.
 5. Lance uma despesa rapida.
-6. Confira o limite diario e o historico atualizados.
+6. Crie uma meta financeira.
+7. Edite ou exclua algum item para conferir o painel recalculado.
 
 ## GitHub
 
