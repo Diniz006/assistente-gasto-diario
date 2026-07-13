@@ -9,6 +9,7 @@
 - Dashboard autenticado por usuario.
 - Calculo de ciclo financeiro.
 - Calculo de limite diario seguro.
+- Graficos do ciclo e gastos por categoria no frontend.
 - CRUD backend de categorias, rendas, contas fixas, despesas e metas.
 - Lancamento rapido de despesa.
 - Contribuicoes para metas no backend.
@@ -25,6 +26,7 @@
 - Contribuicoes para metas no frontend.
 - Edicao/exclusao basica de despesas, contas fixas e metas no frontend.
 - Edicao/exclusao basica de rendas no frontend.
+- Modal interno para edicoes principais no frontend.
 - Limpeza automatica de sessao expirada no frontend.
 - Scripts locais para iniciar a API.
 

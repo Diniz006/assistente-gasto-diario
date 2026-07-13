@@ -14,8 +14,11 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
   - acompanhar um onboarding guiado dos primeiros passos;
   - configurar renda mensal e ciclo;
   - ver dashboard com limite diario seguro;
+  - visualizar graficos do ciclo com entradas, dinheiro guardado e saidas;
+  - visualizar gastos por categoria;
   - cadastrar, listar, editar e excluir rendas do ciclo;
   - criar, editar e ocultar categorias;
+  - editar registros por modal interno no frontend;
   - lancar despesa rapidamente;
   - ver historico de despesas do ciclo;
   - cadastrar e listar contas fixas;

@@ -2,6 +2,7 @@ const state = {
     token: localStorage.getItem("agd.token"),
     user: JSON.parse(localStorage.getItem("agd.user") || "null"),
     dashboard: null,
+    cycleSummary: null,
     categoriesById: new Map(),
     categories: [],
     incomesById: new Map(),
@@ -27,10 +28,14 @@ const $ = (selector) => document.querySelector(selector);
 const authPanel = $("#auth-panel");
 const appPanel = $("#app-panel");
 const toast = $("#toast");
+const editModal = $("#edit-modal");
+const editModalForm = $("#edit-modal-form");
+let editModalResolver = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     bindAuthTabs();
     bindForms();
+    bindEditModal();
     renderSession();
 });
 
@@ -44,6 +49,20 @@ function bindAuthTabs() {
             $("#login-form").classList.toggle("hidden", tab !== "login");
             $("#signup-form").classList.toggle("hidden", tab !== "signup");
         });
+    });
+}
+
+function bindEditModal() {
+    $("#edit-modal-close").addEventListener("click", () => closeEditModal(null));
+    editModal.addEventListener("click", (event) => {
+        if (event.target === editModal) {
+            closeEditModal(null);
+        }
+    });
+    editModalForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const values = Object.fromEntries(new FormData(editModalForm));
+        closeEditModal(values);
     });
 }
 
@@ -99,6 +118,7 @@ function bindForms() {
         $("#quick-status").textContent = "Despesa registrada";
         showToast(`${response.expense.description} entrou no ciclo. Limite atualizado.`);
         renderDashboard(response.dashboard);
+        await loadCycleSummary();
         await loadExpensesForCurrentCycle();
         setTimeout(() => $("#quick-status").textContent = "", 1800);
     });
@@ -379,12 +399,14 @@ async function loadDashboard() {
         $("#setup-card").classList.add("hidden");
         const dashboard = await api("/api/me/dashboard");
         renderDashboard(dashboard);
+        await loadCycleSummary();
         await loadIncomesForCurrentCycle();
         await loadExpensesForCurrentCycle();
     } catch (error) {
         if (error.status === 404) {
             $("#setup-card").classList.remove("hidden");
             renderDashboard(null);
+            renderInsights(null);
             renderIncomes([]);
             renderExpenses([]);
             renderOnboarding();
@@ -453,6 +475,9 @@ async function loadCategories() {
             goalSelect.appendChild(option);
         });
     renderCategories();
+    if (state.cycleSummary) {
+        renderInsights(state.cycleSummary);
+    }
 }
 
 function renderDashboard(dashboard) {
@@ -466,6 +491,7 @@ function renderDashboard(dashboard) {
         $("#fixed-total").textContent = currency.format(0);
         $("#expenses-total").textContent = currency.format(0);
         $("#goals-total").textContent = currency.format(0);
+        renderInsights(null);
         renderIncomes([]);
         renderOnboarding();
         return;
@@ -481,6 +507,80 @@ function renderDashboard(dashboard) {
     $("#expenses-total").textContent = currency.format(safe.expensesTotal);
     $("#goals-total").textContent = currency.format(safe.goalPlannedTotal);
     renderOnboarding();
+}
+
+async function loadCycleSummary() {
+    $("#insights-status").textContent = "Atualizando...";
+    const summary = await api("/api/me/cycle-summary");
+    state.cycleSummary = summary;
+    renderInsights(summary);
+}
+
+function renderInsights(summary) {
+    const flowChart = $("#flow-chart");
+    const categoryChart = $("#expense-category-chart");
+
+    if (!summary) {
+        $("#insights-status").textContent = "";
+        flowChart.innerHTML = '<div class="empty-state">Configure o ciclo para ver os graficos.</div>';
+        categoryChart.innerHTML = '<div class="empty-state">Lance despesas para ver o grafico por categoria.</div>';
+        return;
+    }
+
+    const fixedBillsTotal = Number(summary.fixedBillsTotal || 0);
+    const expensesTotal = Number(summary.expensesTotal || 0);
+    const goalContributedTotal = Number(summary.goalContributedTotal || 0);
+    const goalPlannedTotal = Number(summary.goalPlannedTotal || 0);
+    const investedTotal = Math.max(goalContributedTotal, goalPlannedTotal);
+    const outgoingTotal = fixedBillsTotal + expensesTotal;
+    const flowItems = [
+        { label: "Entrou", value: Number(summary.incomeTotal || 0), kind: "income" },
+        { label: "Ficou guardado", value: investedTotal, kind: "invested" },
+        { label: "Saiu", value: outgoingTotal, kind: "outgoing" }
+    ];
+    const maxFlow = Math.max(...flowItems.map((item) => item.value), 1);
+
+    $("#insights-status").textContent = `${summary.expenseCount} gasto${summary.expenseCount === 1 ? "" : "s"} no ciclo`;
+    flowChart.innerHTML = flowItems.map((item) => {
+        const percent = Math.max(3, Math.round((item.value / maxFlow) * 100));
+        return `
+            <div class="flow-row flow-row--${item.kind}">
+                <div class="flow-row__label">
+                    <strong>${item.label}</strong>
+                    <span>${currency.format(item.value)}</span>
+                </div>
+                <div class="flow-bar">
+                    <span style="width: ${percent}%"></span>
+                </div>
+            </div>
+        `;
+    }).join("");
+
+    const categories = [...(summary.expensesByCategory || [])].sort((left, right) => right.amount - left.amount);
+    if (!categories.length) {
+        categoryChart.innerHTML = '<div class="empty-state">Lance despesas para ver o grafico por categoria.</div>';
+        return;
+    }
+
+    const maxCategory = Math.max(...categories.map((category) => Number(category.amount)), 1);
+    categoryChart.innerHTML = categories.map((category) => {
+        const knownCategory = state.categoriesById.get(category.categoryId);
+        const color = knownCategory?.color || "#d96b5f";
+        const amount = Number(category.amount);
+        const percent = Math.max(4, Math.round((amount / maxCategory) * 100));
+        return `
+            <div class="category-chart-row">
+                <div class="category-chart-row__heading">
+                    <span><i style="background: ${escapeHtml(color)}"></i>${escapeHtml(category.categoryName)}</span>
+                    <strong>${currency.format(amount)}</strong>
+                </div>
+                <div class="category-chart-bar">
+                    <span style="width: ${percent}%; background: ${escapeHtml(color)}"></span>
+                </div>
+                <small>${category.expenseCount} lancamento${category.expenseCount === 1 ? "" : "s"}</small>
+            </div>
+        `;
+    }).join("");
 }
 
 async function loadIncomesForCurrentCycle() {
@@ -828,21 +928,23 @@ function renderFinancialGoals(goals) {
 }
 
 async function editIncome(income) {
-    const description = prompt("Descricao da renda:", income.description);
-    if (description === null) {
+    const values = await openEditModal("Editar renda", [
+        { name: "description", label: "Descricao", value: income.description, maxlength: 160 },
+        { name: "amount", label: "Valor", type: "number", value: income.amount, min: "0.01", step: "0.01" }
+    ]);
+    if (!values) {
         return;
     }
 
-    const amount = promptDecimal("Valor da renda:", income.amount, 0.01);
+    const amount = parsePositiveNumber(values.amount);
     if (amount === null) {
         return;
     }
-
     await api(`/api/me/incomes/${income.id}`, {
         method: "PUT",
         body: {
             categoryId: income.categoryId,
-            description,
+            description: values.description,
             amount,
             receivedOn: income.receivedOn,
             isRecurring: income.isRecurring,
@@ -854,22 +956,20 @@ async function editIncome(income) {
 }
 
 async function editCategory(category) {
-    const name = prompt("Nome da categoria:", category.name);
-    if (name === null) {
-        return;
-    }
-
-    const color = prompt("Cor em hexadecimal:", category.color || "#1f6f4a");
-    if (color === null) {
+    const values = await openEditModal("Editar categoria", [
+        { name: "name", label: "Nome", value: category.name, maxlength: 80 },
+        { name: "color", label: "Cor", type: "color", value: category.color || "#1f6f4a" }
+    ]);
+    if (!values) {
         return;
     }
 
     await api(`/api/me/categories/${category.id}`, {
         method: "PUT",
         body: {
-            name,
+            name: values.name,
             type: category.type,
-            color: color || null,
+            color: values.color || null,
             icon: category.icon,
             isActive: category.isActive
         }
@@ -899,21 +999,23 @@ async function deleteIncome(income) {
 }
 
 async function editExpense(expense) {
-    const description = prompt("Descricao da despesa:", expense.description);
-    if (description === null) {
+    const values = await openEditModal("Editar despesa", [
+        { name: "description", label: "Descricao", value: expense.description, maxlength: 160 },
+        { name: "amount", label: "Valor", type: "number", value: expense.amount, min: "0.01", step: "0.01" }
+    ]);
+    if (!values) {
         return;
     }
 
-    const amount = promptDecimal("Valor da despesa:", expense.amount, 0.01);
+    const amount = parsePositiveNumber(values.amount);
     if (amount === null) {
         return;
     }
-
     await api(`/api/me/expenses/${expense.id}`, {
         method: "PUT",
         body: {
             categoryId: expense.categoryId,
-            description,
+            description: values.description,
             amount,
             spentOn: expense.spentOn,
             paymentMethod: expense.paymentMethod,
@@ -935,26 +1037,25 @@ async function deleteExpense(expense) {
 }
 
 async function editFixedBill(bill) {
-    const name = prompt("Nome da conta fixa:", bill.name);
-    if (name === null) {
+    const values = await openEditModal("Editar conta fixa", [
+        { name: "name", label: "Nome", value: bill.name, maxlength: 120 },
+        { name: "amount", label: "Valor", type: "number", value: bill.amount, min: "0.01", step: "0.01" },
+        { name: "dueDay", label: "Vencimento", type: "number", value: bill.dueDay, min: "1", max: "31", step: "1" }
+    ]);
+    if (!values) {
         return;
     }
 
-    const amount = promptDecimal("Valor da conta:", bill.amount, 0.01);
-    if (amount === null) {
+    const amount = parsePositiveNumber(values.amount);
+    const dueDay = parseIntegerInRange(values.dueDay, 1, 31);
+    if (amount === null || dueDay === null) {
         return;
     }
-
-    const dueDay = promptInteger("Dia de vencimento:", bill.dueDay, 1, 31);
-    if (dueDay === null) {
-        return;
-    }
-
     await api(`/api/me/fixed-bills/${bill.id}`, {
         method: "PUT",
         body: {
             categoryId: bill.categoryId,
-            name,
+            name: values.name,
             amount,
             dueDay,
             status: bill.status,
@@ -981,26 +1082,25 @@ async function deleteFixedBill(bill) {
 }
 
 async function editFinancialGoal(goal) {
-    const name = prompt("Nome da meta:", goal.name);
-    if (name === null) {
+    const values = await openEditModal("Editar meta", [
+        { name: "name", label: "Nome", value: goal.name, maxlength: 140 },
+        { name: "targetAmount", label: "Valor alvo", type: "number", value: goal.targetAmount, min: "0.01", step: "0.01" },
+        { name: "monthlyPlannedAmount", label: "Guardar por mes", type: "number", value: goal.monthlyPlannedAmount, min: "0", step: "0.01" }
+    ]);
+    if (!values) {
         return;
     }
 
-    const targetAmount = promptDecimal("Valor alvo:", goal.targetAmount, 0.01);
-    if (targetAmount === null) {
+    const targetAmount = parsePositiveNumber(values.targetAmount);
+    const monthlyPlannedAmount = parseNonNegativeNumber(values.monthlyPlannedAmount);
+    if (targetAmount === null || monthlyPlannedAmount === null) {
         return;
     }
-
-    const monthlyPlannedAmount = promptDecimal("Quanto guardar por mes:", goal.monthlyPlannedAmount);
-    if (monthlyPlannedAmount === null) {
-        return;
-    }
-
     await api(`/api/me/financial-goals/${goal.id}`, {
         method: "PUT",
         body: {
             categoryId: goal.categoryId,
-            name,
+            name: values.name,
             targetAmount,
             currentAmount: goal.currentAmount,
             monthlyPlannedAmount,
@@ -1026,27 +1126,69 @@ async function deleteFinancialGoal(goal) {
     await loadFinancialGoals();
 }
 
-function promptDecimal(message, currentValue, min = 0) {
-    const value = prompt(message, String(currentValue).replace(".", ","));
-    if (value === null) {
-        return null;
-    }
+function openEditModal(title, fields) {
+    $("#edit-modal-title").textContent = title;
+    editModalForm.innerHTML = `
+        <div class="modal-form__fields">
+            ${fields.map((field) => `
+                <label>
+                    ${escapeHtml(field.label)}
+                    <input
+                        name="${escapeHtml(field.name)}"
+                        type="${escapeHtml(field.type || "text")}"
+                        value="${escapeHtml(field.value ?? "")}"
+                        ${field.min ? `min="${escapeHtml(field.min)}"` : ""}
+                        ${field.max ? `max="${escapeHtml(field.max)}"` : ""}
+                        ${field.step ? `step="${escapeHtml(field.step)}"` : ""}
+                        ${field.maxlength ? `maxlength="${escapeHtml(field.maxlength)}"` : ""}
+                        required>
+                </label>
+            `).join("")}
+        </div>
+        <div class="modal-actions">
+            <button class="button button--ghost" type="button" data-modal-cancel>Cancelar</button>
+            <button class="button button--primary" type="submit">Salvar alteracoes</button>
+        </div>
+    `;
+    editModalForm.querySelector("[data-modal-cancel]").addEventListener("click", () => closeEditModal(null));
+    editModal.classList.remove("hidden");
+    editModalForm.querySelector("input")?.focus();
 
-    const parsed = Number(value.replace(",", "."));
-    if (!Number.isFinite(parsed) || parsed < min) {
-        showToast("Valor invalido. Tente novamente.");
+    return new Promise((resolve) => {
+        editModalResolver = resolve;
+    });
+}
+
+function closeEditModal(value) {
+    editModal.classList.add("hidden");
+    const resolver = editModalResolver;
+    editModalResolver = null;
+    if (resolver) {
+        resolver(value);
+    }
+}
+
+function parsePositiveNumber(value) {
+    const parsed = Number(String(value).replace(",", "."));
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+        showToast("Informe um valor maior que zero.");
         return null;
     }
 
     return parsed;
 }
 
-function promptInteger(message, currentValue, min, max) {
-    const value = prompt(message, String(currentValue));
-    if (value === null) {
+function parseNonNegativeNumber(value) {
+    const parsed = Number(String(value).replace(",", "."));
+    if (!Number.isFinite(parsed) || parsed < 0) {
+        showToast("Informe um valor valido.");
         return null;
     }
 
+    return parsed;
+}
+
+function parseIntegerInRange(value, min, max) {
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < min || parsed > max) {
         showToast(`Informe um numero entre ${min} e ${max}.`);

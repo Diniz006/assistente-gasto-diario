@@ -229,6 +229,7 @@ select:focus {
 .limit-card,
 .summary-card,
 .onboarding-panel,
+.insights-panel,
 .quick-panel,
 .incomes-panel,
 .expenses-panel,
@@ -366,6 +367,96 @@ select:focus {
     color: var(--muted);
     font-family: "Trebuchet MS", Verdana, sans-serif;
     font-size: 0.9rem;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 16px;
+}
+
+.chart-card {
+    display: grid;
+    gap: 16px;
+    border: 1px solid rgba(24, 34, 29, 0.1);
+    border-radius: 26px;
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.chart-card h4 {
+    margin: 3px 0 0;
+    font-size: 1.35rem;
+}
+
+.flow-chart,
+.category-chart {
+    display: grid;
+    gap: 14px;
+}
+
+.flow-row {
+    display: grid;
+    gap: 8px;
+}
+
+.flow-row__label,
+.category-chart-row__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    font-family: "Trebuchet MS", Verdana, sans-serif;
+}
+
+.flow-row__label span,
+.category-chart-row small {
+    color: var(--muted);
+}
+
+.flow-bar,
+.category-chart-bar {
+    height: 16px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(24, 34, 29, 0.1);
+}
+
+.flow-bar span,
+.category-chart-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+}
+
+.flow-row--income .flow-bar span {
+    background: linear-gradient(90deg, #2f855a, var(--brand));
+}
+
+.flow-row--invested .flow-bar span {
+    background: linear-gradient(90deg, var(--sun), #d59a2f);
+}
+
+.flow-row--outgoing .flow-bar span {
+    background: linear-gradient(90deg, var(--rose), #a9443c);
+}
+
+.category-chart-row {
+    display: grid;
+    gap: 7px;
+}
+
+.category-chart-row__heading span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.category-chart-row__heading i {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
 }
 
 .income-list,
@@ -581,6 +672,43 @@ input:disabled {
     font-weight: 700;
 }
 
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    padding: 22px;
+    background: rgba(24, 34, 29, 0.34);
+    backdrop-filter: blur(10px);
+}
+
+.modal__card {
+    width: min(560px, 100%);
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    padding: 24px;
+    background: rgba(255, 252, 244, 0.96);
+    box-shadow: var(--shadow);
+}
+
+.modal-form {
+    display: grid;
+    gap: 16px;
+}
+
+.modal-form__fields {
+    display: grid;
+    gap: 12px;
+}
+
+.modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
 @media (max-width: 860px) {
     .shell {
         width: min(100% - 22px, 680px);
@@ -588,6 +716,7 @@ input:disabled {
     }
 
     .dashboard-grid,
+    .insights-grid,
     .setup-grid,
     .quick-form,
     .income-form,
