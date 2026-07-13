@@ -15,6 +15,7 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
   - configurar renda mensal e ciclo;
   - ver dashboard com limite diario seguro;
   - cadastrar, listar, editar e excluir rendas do ciclo;
+  - criar, editar e ocultar categorias;
   - lancar despesa rapidamente;
   - ver historico de despesas do ciclo;
   - cadastrar e listar contas fixas;

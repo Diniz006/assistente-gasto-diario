@@ -272,6 +272,39 @@
                     <div class="empty-state">Crie uma meta para acompanhar seu progresso e reservar dinheiro sem perder o limite do dia.</div>
                 </div>
             </section>
+
+            <section class="panel categories-panel">
+                <div class="section-title">
+                    <div>
+                        <p class="muted">Organizacao</p>
+                        <h3>Categorias</h3>
+                    </div>
+                    <span id="categories-status" class="status"></span>
+                </div>
+                <form class="category-form" id="category-form">
+                    <label>
+                        Nome
+                        <input name="name" type="text" placeholder="Ex: pets, estudos, delivery" required maxlength="80">
+                    </label>
+                    <label>
+                        Tipo
+                        <select name="type" required>
+                            <option value="2">Despesa</option>
+                            <option value="1">Renda</option>
+                            <option value="3">Conta fixa</option>
+                            <option value="4">Meta</option>
+                        </select>
+                    </label>
+                    <label>
+                        Cor
+                        <input name="color" type="color" value="#1f6f4a">
+                    </label>
+                    <button class="button button--primary" type="submit">Criar categoria</button>
+                </form>
+                <div class="category-list" id="category-list">
+                    <div class="empty-state">Suas categorias aparecem aqui.</div>
+                </div>
+            </section>
         </section>
 
         <div class="toast hidden" id="toast" role="status"></div>

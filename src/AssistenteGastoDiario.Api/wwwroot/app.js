@@ -3,6 +3,7 @@ const state = {
     user: JSON.parse(localStorage.getItem("agd.user") || "null"),
     dashboard: null,
     categoriesById: new Map(),
+    categories: [],
     incomesById: new Map(),
     expensesById: new Map(),
     fixedBillsById: new Map(),
@@ -173,6 +174,26 @@ function bindForms() {
         await loadFinancialGoals();
     });
 
+    $("#category-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const data = Object.fromEntries(new FormData(form));
+        $("#categories-status").textContent = "Salvando...";
+        await api("/api/me/categories", {
+            method: "POST",
+            body: {
+                name: data.name,
+                type: Number(data.type),
+                color: data.color || null,
+                icon: null
+            }
+        });
+        form.reset();
+        form.elements.color.value = "#1f6f4a";
+        showToast(`${data.name} entrou nas suas categorias.`);
+        await loadCategories();
+    });
+
     $("#goal-list").addEventListener("submit", async (event) => {
         if (!event.target.matches("[data-goal-contribution-form]")) {
             return;
@@ -192,6 +213,24 @@ function bindForms() {
         showToast("Contribuicao registrada. Meta e limite recalculados.");
         await loadDashboard();
         await loadFinancialGoals();
+    });
+
+    $("#category-list").addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-category-action]");
+        if (!button) {
+            return;
+        }
+
+        const category = state.categoriesById.get(button.dataset.categoryId);
+        if (!category) {
+            return;
+        }
+
+        if (button.dataset.categoryAction === "edit") {
+            await editCategory(category);
+        } else if (button.dataset.categoryAction === "deactivate") {
+            await deactivateCategory(category);
+        }
     });
 
     $("#onboarding-list").addEventListener("click", (event) => {
@@ -357,17 +396,24 @@ async function loadDashboard() {
 
 async function loadCategories() {
     state.categoriesById.clear();
-    state.incomeCategories = await api("/api/me/categories?type=1");
-    state.expenseCategories = await api("/api/me/categories?type=2");
-    state.billCategories = await api("/api/me/categories?type=3");
-    state.goalCategories = await api("/api/me/categories?type=4");
+    const categoryGroups = await Promise.all([
+        api("/api/me/categories?type=1"),
+        api("/api/me/categories?type=2"),
+        api("/api/me/categories?type=3"),
+        api("/api/me/categories?type=4")
+    ]);
+    state.incomeCategories = categoryGroups[0];
+    state.expenseCategories = categoryGroups[1];
+    state.billCategories = categoryGroups[2];
+    state.goalCategories = categoryGroups[3];
+    state.categories = categoryGroups.flat();
+    state.categories.forEach((category) => state.categoriesById.set(category.id, category));
 
     const incomeSelect = $("#income-category-select");
     incomeSelect.innerHTML = '<option value="">Sem categoria</option>';
     state.incomeCategories
         .filter((category) => category.isActive)
         .forEach((category) => {
-            state.categoriesById.set(category.id, category);
             const option = document.createElement("option");
             option.value = category.id;
             option.textContent = category.name;
@@ -379,7 +425,6 @@ async function loadCategories() {
     state.expenseCategories
         .filter((category) => category.isActive)
         .forEach((category) => {
-            state.categoriesById.set(category.id, category);
             const option = document.createElement("option");
             option.value = category.id;
             option.textContent = category.name;
@@ -391,7 +436,6 @@ async function loadCategories() {
     state.billCategories
         .filter((category) => category.isActive)
         .forEach((category) => {
-            state.categoriesById.set(category.id, category);
             const option = document.createElement("option");
             option.value = category.id;
             option.textContent = category.name;
@@ -403,12 +447,12 @@ async function loadCategories() {
     state.goalCategories
         .filter((category) => category.isActive)
         .forEach((category) => {
-            state.categoriesById.set(category.id, category);
             const option = document.createElement("option");
             option.value = category.id;
             option.textContent = category.name;
             goalSelect.appendChild(option);
         });
+    renderCategories();
 }
 
 function renderDashboard(dashboard) {
@@ -609,7 +653,7 @@ function renderOnboarding() {
 
     list.innerHTML = steps.map((step, index) => `
         <article class="onboarding-step ${step.done ? "onboarding-step--done" : ""} ${step === nextStep ? "onboarding-step--next" : ""}">
-            <span class="onboarding-step__number">${step.done ? "✓" : index + 1}</span>
+            <span class="onboarding-step__number">${step.done ? "OK" : index + 1}</span>
             <div>
                 <strong>${escapeHtml(step.title)}</strong>
                 <p>${escapeHtml(step.description)}</p>
@@ -619,6 +663,59 @@ function renderOnboarding() {
             </button>
         </article>
     `).join("");
+}
+
+function renderCategories() {
+    const list = $("#category-list");
+    if (!list) {
+        return;
+    }
+
+    const activeCategories = state.categories.filter((category) => category.isActive);
+    $("#categories-status").textContent = `${activeCategories.length} ativa${activeCategories.length === 1 ? "" : "s"}`;
+
+    if (!state.categories.length) {
+        list.innerHTML = '<div class="empty-state">Suas categorias aparecem aqui.</div>';
+        return;
+    }
+
+    const groups = [
+        { type: 1, title: "Rendas" },
+        { type: 2, title: "Despesas" },
+        { type: 3, title: "Contas fixas" },
+        { type: 4, title: "Metas" }
+    ];
+
+    list.innerHTML = groups.map((group) => {
+        const categories = state.categories
+            .filter((category) => category.type === group.type)
+            .sort((left, right) => Number(right.isActive) - Number(left.isActive) || left.name.localeCompare(right.name));
+
+        return `
+            <section class="category-group">
+                <h4>${group.title}</h4>
+                <div class="category-items">
+                    ${categories.length ? categories.map((category) => renderCategoryItem(category)).join("") : '<div class="empty-state">Nenhuma categoria nesse tipo.</div>'}
+                </div>
+            </section>
+        `;
+    }).join("");
+}
+
+function renderCategoryItem(category) {
+    return `
+        <article class="category-item ${category.isActive ? "" : "category-item--inactive"}">
+            <span class="category-dot" style="background: ${escapeHtml(category.color || "#1f6f4a")}"></span>
+            <div>
+                <strong>${escapeHtml(category.name)}</strong>
+                <span>${category.isDefault ? "Padrao" : "Personalizada"}${category.isActive ? "" : " &middot; inativa"}</span>
+            </div>
+            <div class="item-actions">
+                <button class="button button--tiny" type="button" data-category-action="edit" data-category-id="${category.id}">Editar</button>
+                <button class="button button--tiny button--danger" type="button" data-category-action="deactivate" data-category-id="${category.id}" ${category.isActive ? "" : "disabled"}>Ocultar</button>
+            </div>
+        </article>
+    `;
 }
 
 async function loadFixedBills() {
@@ -754,6 +851,41 @@ async function editIncome(income) {
     });
     showToast("Renda atualizada. Limite recalculado.");
     await loadDashboard();
+}
+
+async function editCategory(category) {
+    const name = prompt("Nome da categoria:", category.name);
+    if (name === null) {
+        return;
+    }
+
+    const color = prompt("Cor em hexadecimal:", category.color || "#1f6f4a");
+    if (color === null) {
+        return;
+    }
+
+    await api(`/api/me/categories/${category.id}`, {
+        method: "PUT",
+        body: {
+            name,
+            type: category.type,
+            color: color || null,
+            icon: category.icon,
+            isActive: category.isActive
+        }
+    });
+    showToast("Categoria atualizada.");
+    await loadCategories();
+}
+
+async function deactivateCategory(category) {
+    if (!confirm(`Ocultar a categoria "${category.name}"?`)) {
+        return;
+    }
+
+    await api(`/api/me/categories/${category.id}`, { method: "DELETE" });
+    showToast("Categoria ocultada dos formularios.");
+    await loadCategories();
 }
 
 async function deleteIncome(income) {

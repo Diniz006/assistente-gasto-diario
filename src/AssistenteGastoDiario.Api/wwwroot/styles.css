@@ -233,7 +233,8 @@ select:focus {
 .incomes-panel,
 .expenses-panel,
 .bills-panel,
-.goals-panel {
+.goals-panel,
+.categories-panel {
     padding: 26px;
 }
 
@@ -370,12 +371,24 @@ select:focus {
 .income-list,
 .expense-list,
 .bill-list,
-.goal-list {
+.goal-list,
+.category-list,
+.category-items {
     display: grid;
     gap: 10px;
 }
 
+.category-list {
+    gap: 18px;
+}
+
+.category-group h4 {
+    margin: 0 0 10px;
+    font-size: 1.2rem;
+}
+
 .income-form,
+.category-form,
 .bill-form,
 .goal-form {
     display: grid;
@@ -387,6 +400,10 @@ select:focus {
 
 .income-form {
     grid-template-columns: 1.2fr 0.75fr 0.85fr 1fr auto auto;
+}
+
+.category-form {
+    grid-template-columns: 1.4fr 0.9fr 0.5fr auto;
 }
 
 .goal-form {
@@ -407,7 +424,8 @@ select:focus {
 .income-item,
 .expense-item,
 .bill-item,
-.goal-item {
+.goal-item,
+.category-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -426,7 +444,8 @@ select:focus {
 .income-item strong,
 .expense-item strong,
 .bill-item strong,
-.goal-item strong {
+.goal-item strong,
+.category-item strong {
     display: block;
     margin-bottom: 4px;
     font-size: 1.05rem;
@@ -436,6 +455,7 @@ select:focus {
 .expense-item span,
 .bill-item span,
 .goal-item span,
+.category-item span,
 .empty-state {
     color: var(--muted);
     font-family: "Trebuchet MS", Verdana, sans-serif;
@@ -454,6 +474,27 @@ select:focus {
 
 .income-item b {
     color: var(--brand-strong);
+}
+
+.category-item {
+    justify-content: start;
+}
+
+.category-item .item-actions {
+    margin-left: auto;
+}
+
+.category-item--inactive {
+    opacity: 0.52;
+}
+
+.category-dot {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    border: 2px solid rgba(255, 255, 255, 0.72);
+    border-radius: 999px;
+    box-shadow: 0 0 0 1px rgba(24, 34, 29, 0.16);
 }
 
 .item-side {
@@ -550,6 +591,7 @@ input:disabled {
     .setup-grid,
     .quick-form,
     .income-form,
+    .category-form,
     .bill-form,
     .goal-form,
     .goal-contribution-form {
@@ -573,6 +615,7 @@ input:disabled {
     .income-item,
     .expense-item,
     .bill-item,
+    .category-item,
     .goal-item__header,
     .goal-item__details,
     .item-side {
@@ -583,5 +626,9 @@ input:disabled {
 
     .item-actions {
         justify-content: flex-start;
+    }
+
+    .category-item .item-actions {
+        margin-left: 0;
     }
 }

@@ -18,6 +18,7 @@
 - Onboarding guiado dos primeiros passos no frontend.
 - Tela de lancamento rapido.
 - Cadastro/listagem de rendas no frontend.
+- Criacao/edicao/ocultacao de categorias no frontend.
 - Historico de despesas recentes.
 - Cadastro/listagem de contas fixas.
 - Cadastro/listagem de metas financeiras no frontend.
@@ -29,18 +30,13 @@
 
 ## Proximos passos recomendados
 
-1. Categorias no frontend:
-   - criar categoria propria;
-   - editar categoria;
-   - ocultar categoria que nao usa.
-
-2. Qualidade:
+1. Qualidade:
    - testes automatizados;
    - tratamento padronizado de erros;
    - validacoes melhores no frontend;
    - estados de loading/erro mais claros.
 
-3. Entrega:
+2. Entrega:
    - revisar textos finais;
    - preparar build/publicacao;
    - decidir ambiente de deploy.
