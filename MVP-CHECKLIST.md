@@ -22,6 +22,7 @@
 - Cadastro/listagem de rendas no frontend.
 - Criacao/edicao/ocultacao de categorias no frontend.
 - Historico de despesas recentes.
+- Filtros e busca no historico de despesas.
 - Cadastro/listagem de contas fixas.
 - Cadastro/listagem de metas financeiras no frontend.
 - Contribuicoes para metas no frontend.

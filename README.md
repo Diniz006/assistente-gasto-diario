@@ -22,6 +22,7 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
   - editar registros por modal interno no frontend;
   - lancar despesa rapidamente;
   - ver historico de despesas do ciclo;
+  - filtrar e buscar despesas por periodo, texto, categoria e pagamento;
   - cadastrar e listar contas fixas;
   - criar metas financeiras e registrar contribuicoes;
   - editar e excluir despesas, contas fixas e metas pelo frontend.

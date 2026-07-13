@@ -585,6 +585,7 @@ select:focus {
 }
 
 .income-form,
+.expense-filter-form,
 .category-form,
 .bill-form,
 .goal-form {
@@ -597,6 +598,10 @@ select:focus {
 
 .income-form {
     grid-template-columns: 1.2fr 0.75fr 0.85fr 1fr auto auto;
+}
+
+.expense-filter-form {
+    grid-template-columns: 1.2fr 0.75fr 0.75fr 0.9fr 0.85fr auto auto;
 }
 
 .category-form {
@@ -828,6 +833,7 @@ input:disabled {
     .monthly-filter,
     .monthly-cards,
     .income-form,
+    .expense-filter-form,
     .category-form,
     .bill-form,
     .goal-form,

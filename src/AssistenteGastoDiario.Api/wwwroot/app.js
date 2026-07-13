@@ -4,6 +4,7 @@ const state = {
     dashboard: null,
     cycleSummary: null,
     monthlySummaries: [],
+    expenses: [],
     categoriesById: new Map(),
     categories: [],
     incomesById: new Map(),
@@ -221,6 +222,21 @@ function bindForms() {
         await loadMonthlyOverview(data.referenceMonth || currentMonthIso());
     });
 
+    $("#expense-filter-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const filters = getExpenseFilters();
+        await loadExpensesByPeriod(filters.startDate, filters.endDate);
+    });
+
+    $("#expense-filter-form").addEventListener("input", () => {
+        renderExpenses(applyExpenseFilters(state.expenses));
+    });
+
+    $("#expense-filter-clear").addEventListener("click", async () => {
+        resetExpenseFiltersToCurrentCycle();
+        await loadExpensesForCurrentCycle();
+    });
+
     $("#goal-list").addEventListener("submit", async (event) => {
         if (!event.target.matches("[data-goal-contribution-form]")) {
             return;
@@ -417,6 +433,7 @@ async function loadDashboard() {
             renderDashboard(null);
             renderInsights(null);
             renderMonthlyOverview(null, []);
+            state.expenses = [];
             renderIncomes([]);
             renderExpenses([]);
             renderOnboarding();
@@ -454,6 +471,8 @@ async function loadCategories() {
 
     const select = $("#category-select");
     select.innerHTML = '<option value="">Automatica</option>';
+    const expenseFilterCategory = $("#expense-filter-category");
+    expenseFilterCategory.innerHTML = '<option value="">Todas</option>';
     state.expenseCategories
         .filter((category) => category.isActive)
         .forEach((category) => {
@@ -461,6 +480,11 @@ async function loadCategories() {
             option.value = category.id;
             option.textContent = category.name;
             select.appendChild(option);
+
+            const filterOption = document.createElement("option");
+            filterOption.value = category.id;
+            filterOption.textContent = category.name;
+            expenseFilterCategory.appendChild(filterOption);
         });
 
     const billSelect = $("#bill-category-select");
@@ -719,19 +743,31 @@ async function loadIncomesForCurrentCycle() {
 
 async function loadExpensesForCurrentCycle() {
     if (!state.dashboard?.financialCycle) {
+        state.expenses = [];
         renderExpenses([]);
         return;
     }
 
-    $("#expenses-status").textContent = "Atualizando...";
     const cycle = state.dashboard.financialCycle;
+    $("#expense-filter-start").value = cycle.cycleStartDate;
+    $("#expense-filter-end").value = cycle.cycleEndDate;
+    await loadExpensesByPeriod(cycle.cycleStartDate, cycle.cycleEndDate);
+}
+
+async function loadExpensesByPeriod(startDate, endDate) {
+    if (startDate > endDate) {
+        showToast("A data inicial precisa ser antes da data final.");
+        return;
+    }
+
+    $("#expenses-status").textContent = "Atualizando...";
     const params = new URLSearchParams({
-        startDate: cycle.cycleStartDate,
-        endDate: cycle.cycleEndDate
+        startDate,
+        endDate
     });
     const expenses = await api(`/api/me/expenses?${params.toString()}`);
-    renderExpenses(expenses);
-    $("#expenses-status").textContent = `${expenses.length} lancamento${expenses.length === 1 ? "" : "s"}`;
+    state.expenses = expenses;
+    renderExpenses(applyExpenseFilters(expenses));
     renderOnboarding();
 }
 
@@ -776,15 +812,78 @@ function renderIncomes(incomes) {
     });
 }
 
+function getExpenseFilters() {
+    const data = Object.fromEntries(new FormData($("#expense-filter-form")));
+    return {
+        search: String(data.search || "").trim().toLowerCase(),
+        startDate: data.startDate || state.dashboard?.financialCycle?.cycleStartDate || todayIso(),
+        endDate: data.endDate || state.dashboard?.financialCycle?.cycleEndDate || todayIso(),
+        categoryId: data.categoryId || "",
+        paymentMethod: data.paymentMethod ? Number(data.paymentMethod) : null
+    };
+}
+
+function applyExpenseFilters(expenses) {
+    const filters = getExpenseFilters();
+    return expenses.filter((expense) => {
+        const category = state.categoriesById.get(expense.categoryId);
+        const text = `${expense.description} ${category?.name || ""} ${paymentMethodLabel(expense.paymentMethod)}`.toLowerCase();
+        const matchesSearch = !filters.search || text.includes(filters.search);
+        const matchesCategory = !filters.categoryId || expense.categoryId === filters.categoryId;
+        const matchesPayment = !filters.paymentMethod || expense.paymentMethod === filters.paymentMethod;
+        return matchesSearch && matchesCategory && matchesPayment;
+    });
+}
+
+function resetExpenseFiltersToCurrentCycle() {
+    const form = $("#expense-filter-form");
+    form.reset();
+    if (state.dashboard?.financialCycle) {
+        form.elements.startDate.value = state.dashboard.financialCycle.cycleStartDate;
+        form.elements.endDate.value = state.dashboard.financialCycle.cycleEndDate;
+    }
+}
+
+function hasExpenseFilters() {
+    const filters = getExpenseFilters();
+    const cycle = state.dashboard?.financialCycle;
+    return Boolean(
+        filters.search
+        || filters.categoryId
+        || filters.paymentMethod
+        || (cycle && (filters.startDate !== cycle.cycleStartDate || filters.endDate !== cycle.cycleEndDate))
+    );
+}
+
+function paymentMethodLabel(paymentMethod) {
+    const labels = {
+        1: "Dinheiro",
+        2: "Debito",
+        3: "Credito",
+        4: "Pix",
+        5: "Transferencia",
+        6: "Outro"
+    };
+
+    return labels[paymentMethod] || "Pagamento";
+}
+
 function renderExpenses(expenses) {
     const list = $("#expense-list");
     list.innerHTML = "";
     state.expensesById.clear();
-    state.expenseCount = expenses.length;
+    state.expenseCount = state.expenses.length;
+    const allTotal = state.expenses.reduce((total, expense) => total + Number(expense.amount || 0), 0);
+    const filteredTotal = expenses.reduce((total, expense) => total + Number(expense.amount || 0), 0);
+    const hasActiveFilters = hasExpenseFilters();
 
     if (!expenses.length) {
-        list.innerHTML = '<div class="empty-state">Quando voce lancar despesas, elas aparecem aqui.</div>';
-        $("#expenses-status").textContent = "";
+        list.innerHTML = hasActiveFilters
+            ? '<div class="empty-state">Nenhuma despesa encontrada com esses filtros.</div>'
+            : '<div class="empty-state">Quando voce lancar despesas, elas aparecem aqui.</div>';
+        $("#expenses-status").textContent = state.expenses.length
+            ? `0 de ${state.expenses.length} lancamento${state.expenses.length === 1 ? "" : "s"}`
+            : "";
         return;
     }
 
@@ -795,7 +894,11 @@ function renderExpenses(expenses) {
             : right.createdAt.localeCompare(left.createdAt);
     });
 
-    recentExpenses.slice(0, 8).forEach((expense) => {
+    $("#expenses-status").textContent = hasActiveFilters
+        ? `${expenses.length} de ${state.expenses.length} lancamento${state.expenses.length === 1 ? "" : "s"} · ${currency.format(filteredTotal)} filtrado`
+        : `${expenses.length} lancamento${expenses.length === 1 ? "" : "s"} · ${currency.format(allTotal)}`;
+
+    recentExpenses.forEach((expense) => {
         state.expensesById.set(expense.id, expense);
         const category = state.categoriesById.get(expense.categoryId);
         const item = document.createElement("article");
@@ -803,7 +906,7 @@ function renderExpenses(expenses) {
         item.innerHTML = `
             <div>
                 <strong>${escapeHtml(expense.description)}</strong>
-                <span>${formatDate(expense.spentOn)}${category ? ` &middot; ${escapeHtml(category.name)}` : ""}</span>
+                <span>${formatDate(expense.spentOn)}${category ? ` &middot; ${escapeHtml(category.name)}` : ""} &middot; ${paymentMethodLabel(expense.paymentMethod)}</span>
             </div>
             <div class="item-side">
                 <b>${currency.format(expense.amount)}</b>
