@@ -13,6 +13,7 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
   - criar conta e login;
   - acompanhar um onboarding guiado dos primeiros passos;
   - configurar renda mensal e ciclo;
+  - editar configuracoes financeiras pelo painel;
   - ver dashboard com limite diario seguro;
   - visualizar graficos do ciclo com entradas, dinheiro guardado e saidas;
   - visualizar gastos por categoria;

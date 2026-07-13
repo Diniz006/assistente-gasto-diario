@@ -4,6 +4,7 @@ const state = {
     dashboard: null,
     cycleSummary: null,
     monthlySummaries: [],
+    financialSetting: null,
     expenses: [],
     categoriesById: new Map(),
     categories: [],
@@ -89,16 +90,19 @@ function bindForms() {
     $("#settings-form").addEventListener("submit", async (event) => {
         event.preventDefault();
         const data = Object.fromEntries(new FormData(event.currentTarget));
-        await api("/api/me/financial-settings", {
-            method: "PUT",
-            body: {
-                monthlyIncomeDefault: Number(data.monthlyIncomeDefault),
-                cycleStartDay: Number(data.cycleStartDay),
-                monthClosureDay: data.monthClosureDay ? Number(data.monthClosureDay) : null,
-                currencyCode: "BRL"
-            }
-        });
+        await saveFinancialSettings(data);
         showToast("Configuracao salva. Agora o painel ja consegue calcular seu dia.");
+        await loadDashboard();
+    });
+
+    $("#financial-settings-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const data = Object.fromEntries(new FormData(form));
+        $("#financial-settings-status").textContent = "Salvando...";
+        const setting = await saveFinancialSettings(data);
+        renderFinancialSettings(setting);
+        showToast("Configuracoes atualizadas. Painel recalculado.");
         await loadDashboard();
     });
 
@@ -423,6 +427,7 @@ async function loadDashboard() {
         $("#setup-card").classList.add("hidden");
         const dashboard = await api("/api/me/dashboard");
         renderDashboard(dashboard);
+        await loadFinancialSettings();
         await loadCycleSummary();
         await loadMonthlyOverview($("#monthly-reference").value || currentMonthIso(), true);
         await loadIncomesForCurrentCycle();
@@ -431,6 +436,7 @@ async function loadDashboard() {
         if (error.status === 404) {
             $("#setup-card").classList.remove("hidden");
             renderDashboard(null);
+            renderFinancialSettings(null);
             renderInsights(null);
             renderMonthlyOverview(null, []);
             state.expenses = [];
@@ -441,6 +447,40 @@ async function loadDashboard() {
         }
         throw error;
     }
+}
+
+async function saveFinancialSettings(data) {
+    return api("/api/me/financial-settings", {
+        method: "PUT",
+        body: {
+            monthlyIncomeDefault: Number(data.monthlyIncomeDefault),
+            cycleStartDay: Number(data.cycleStartDay),
+            monthClosureDay: data.monthClosureDay ? Number(data.monthClosureDay) : null,
+            currencyCode: "BRL"
+        }
+    });
+}
+
+async function loadFinancialSettings() {
+    $("#financial-settings-status").textContent = "Atualizando...";
+    const setting = await api("/api/me/financial-settings");
+    renderFinancialSettings(setting);
+}
+
+function renderFinancialSettings(setting) {
+    state.financialSetting = setting;
+    const panel = $("#financial-settings-panel");
+    panel.classList.toggle("hidden", !setting);
+
+    if (!setting) {
+        $("#financial-settings-status").textContent = "";
+        return;
+    }
+
+    $("#financial-setting-income").value = setting.monthlyIncomeDefault;
+    $("#financial-setting-start-day").value = setting.cycleStartDay;
+    $("#financial-setting-closure-day").value = setting.monthClosureDay || "";
+    $("#financial-settings-status").textContent = `Ciclo inicia dia ${setting.cycleStartDay}`;
 }
 
 async function loadCategories() {

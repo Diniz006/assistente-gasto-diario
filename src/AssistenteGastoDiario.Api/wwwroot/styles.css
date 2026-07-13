@@ -118,6 +118,7 @@ h1 {
 
 .form,
 .quick-form,
+.financial-settings-form,
 .setup-grid {
     display: grid;
     gap: 14px;
@@ -215,6 +216,7 @@ select:focus {
 }
 
 .setup-grid,
+.financial-settings-form,
 .quick-form {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     align-items: end;
@@ -229,6 +231,7 @@ select:focus {
 .limit-card,
 .summary-card,
 .onboarding-panel,
+.settings-panel,
 .insights-panel,
 .monthly-panel,
 .quick-panel,
@@ -829,6 +832,7 @@ input:disabled {
     .dashboard-grid,
     .insights-grid,
     .setup-grid,
+    .financial-settings-form,
     .quick-form,
     .monthly-filter,
     .monthly-cards,

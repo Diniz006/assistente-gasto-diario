@@ -16,6 +16,7 @@
 - Contribuicoes para metas no backend.
 - Frontend estatico inicial.
 - Tela de configuracao financeira.
+- Edicao de configuracoes financeiras no painel.
 - Tela de dashboard.
 - Onboarding guiado dos primeiros passos no frontend.
 - Tela de lancamento rapido.

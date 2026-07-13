@@ -94,6 +94,31 @@
                 <div class="onboarding-list" id="onboarding-list"></div>
             </section>
 
+            <section class="panel settings-panel hidden" id="financial-settings-panel">
+                <div class="section-title">
+                    <div>
+                        <p class="muted">Configuracoes financeiras</p>
+                        <h3>Ajuste renda e ciclo</h3>
+                    </div>
+                    <span id="financial-settings-status" class="status"></span>
+                </div>
+                <form class="financial-settings-form" id="financial-settings-form">
+                    <label>
+                        Renda mensal padrao
+                        <input name="monthlyIncomeDefault" id="financial-setting-income" type="number" min="0" step="0.01" required>
+                    </label>
+                    <label>
+                        Dia inicial do ciclo
+                        <input name="cycleStartDay" id="financial-setting-start-day" type="number" min="1" max="31" required>
+                    </label>
+                    <label>
+                        Dia de fechamento
+                        <input name="monthClosureDay" id="financial-setting-closure-day" type="number" min="1" max="31">
+                    </label>
+                    <button class="button button--primary" type="submit">Salvar ajustes</button>
+                </form>
+            </section>
+
             <section class="dashboard-grid">
                 <article class="limit-card">
                     <span class="chip" id="cycle-label">Ciclo atual</span>
