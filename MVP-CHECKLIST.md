@@ -15,6 +15,7 @@
 - Frontend estatico inicial.
 - Tela de configuracao financeira.
 - Tela de dashboard.
+- Onboarding guiado dos primeiros passos no frontend.
 - Tela de lancamento rapido.
 - Cadastro/listagem de rendas no frontend.
 - Historico de despesas recentes.
@@ -28,25 +29,18 @@
 
 ## Proximos passos recomendados
 
-1. Onboarding guiado:
-   - renda mensal;
-   - ciclo;
-   - contas fixas;
-   - primeira meta;
-   - primeiro lancamento.
-
-2. Categorias no frontend:
+1. Categorias no frontend:
    - criar categoria propria;
    - editar categoria;
    - ocultar categoria que nao usa.
 
-3. Qualidade:
+2. Qualidade:
    - testes automatizados;
    - tratamento padronizado de erros;
    - validacoes melhores no frontend;
    - estados de loading/erro mais claros.
 
-4. Entrega:
+3. Entrega:
    - revisar textos finais;
    - preparar build/publicacao;
    - decidir ambiente de deploy.

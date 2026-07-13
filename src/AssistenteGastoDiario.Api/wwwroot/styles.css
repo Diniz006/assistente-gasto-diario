@@ -228,6 +228,7 @@ select:focus {
 
 .limit-card,
 .summary-card,
+.onboarding-panel,
 .quick-panel,
 .incomes-panel,
 .expenses-panel,
@@ -298,6 +299,72 @@ select:focus {
     font-family: "Trebuchet MS", Verdana, sans-serif;
     font-size: 0.9rem;
     font-weight: 800;
+}
+
+.onboarding-progress {
+    height: 12px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(24, 34, 29, 0.1);
+    margin-bottom: 16px;
+}
+
+.onboarding-progress span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--brand), var(--sun));
+    transition: width 220ms ease;
+}
+
+.onboarding-list {
+    display: grid;
+    gap: 10px;
+}
+
+.onboarding-step {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid rgba(24, 34, 29, 0.1);
+    border-radius: 22px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.46);
+}
+
+.onboarding-step--next {
+    border-color: rgba(31, 111, 74, 0.28);
+    background: rgba(31, 111, 74, 0.08);
+}
+
+.onboarding-step--done {
+    opacity: 0.76;
+}
+
+.onboarding-step__number {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    color: #fffaf0;
+    background: var(--brand-strong);
+    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-weight: 800;
+}
+
+.onboarding-step strong {
+    display: block;
+    margin-bottom: 3px;
+}
+
+.onboarding-step p {
+    margin-bottom: 0;
+    color: var(--muted);
+    font-family: "Trebuchet MS", Verdana, sans-serif;
+    font-size: 0.9rem;
 }
 
 .income-list,
@@ -492,6 +559,15 @@ input:disabled {
     .app-header {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .onboarding-step {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .onboarding-step .button {
+        grid-column: 1 / -1;
+        width: fit-content;
     }
 
     .income-item,

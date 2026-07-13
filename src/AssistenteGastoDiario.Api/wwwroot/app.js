@@ -7,6 +7,10 @@ const state = {
     expensesById: new Map(),
     fixedBillsById: new Map(),
     goalsById: new Map(),
+    incomeCount: 0,
+    expenseCount: 0,
+    fixedBillCount: 0,
+    goalCount: 0,
     incomeCategories: [],
     expenseCategories: [],
     billCategories: [],
@@ -190,6 +194,16 @@ function bindForms() {
         await loadFinancialGoals();
     });
 
+    $("#onboarding-list").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-scroll-target]");
+        if (!button) {
+            return;
+        }
+
+        const target = $(button.dataset.scrollTarget);
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
     $("#income-list").addEventListener("click", async (event) => {
         const button = event.target.closest("[data-income-action]");
         if (!button) {
@@ -334,6 +348,7 @@ async function loadDashboard() {
             renderDashboard(null);
             renderIncomes([]);
             renderExpenses([]);
+            renderOnboarding();
             return;
         }
         throw error;
@@ -408,6 +423,7 @@ function renderDashboard(dashboard) {
         $("#expenses-total").textContent = currency.format(0);
         $("#goals-total").textContent = currency.format(0);
         renderIncomes([]);
+        renderOnboarding();
         return;
     }
 
@@ -420,6 +436,7 @@ function renderDashboard(dashboard) {
     $("#fixed-total").textContent = currency.format(safe.fixedBillsTotal);
     $("#expenses-total").textContent = currency.format(safe.expensesTotal);
     $("#goals-total").textContent = currency.format(safe.goalPlannedTotal);
+    renderOnboarding();
 }
 
 async function loadIncomesForCurrentCycle() {
@@ -437,6 +454,7 @@ async function loadIncomesForCurrentCycle() {
     const incomes = await api(`/api/me/incomes?${params.toString()}`);
     renderIncomes(incomes);
     $("#incomes-status").textContent = `${incomes.length} entrada${incomes.length === 1 ? "" : "s"}`;
+    renderOnboarding();
 }
 
 async function loadExpensesForCurrentCycle() {
@@ -454,12 +472,14 @@ async function loadExpensesForCurrentCycle() {
     const expenses = await api(`/api/me/expenses?${params.toString()}`);
     renderExpenses(expenses);
     $("#expenses-status").textContent = `${expenses.length} lancamento${expenses.length === 1 ? "" : "s"}`;
+    renderOnboarding();
 }
 
 function renderIncomes(incomes) {
     const list = $("#income-list");
     list.innerHTML = "";
     state.incomesById.clear();
+    state.incomeCount = incomes.length;
 
     if (!incomes.length) {
         list.innerHTML = '<div class="empty-state">Quando voce cadastrar uma renda do ciclo, ela aparece aqui.</div>';
@@ -500,6 +520,7 @@ function renderExpenses(expenses) {
     const list = $("#expense-list");
     list.innerHTML = "";
     state.expensesById.clear();
+    state.expenseCount = expenses.length;
 
     if (!expenses.length) {
         list.innerHTML = '<div class="empty-state">Quando voce lancar despesas, elas aparecem aqui.</div>';
@@ -536,17 +557,83 @@ function renderExpenses(expenses) {
     });
 }
 
+function renderOnboarding() {
+    const list = $("#onboarding-list");
+    if (!list) {
+        return;
+    }
+
+    const safe = state.dashboard?.safeDailyLimit;
+    const steps = [
+        {
+            title: "Configurar ciclo",
+            description: "Informe renda mensal e dia inicial para o app entender seu mes.",
+            done: Boolean(state.dashboard),
+            target: "#setup-card",
+            action: "Configurar"
+        },
+        {
+            title: "Registrar renda",
+            description: "Adicione salario ou entrada extra para deixar o limite mais real.",
+            done: state.incomeCount > 0 || Number(safe?.incomeTotal || 0) > 0,
+            target: ".incomes-panel",
+            action: "Adicionar renda"
+        },
+        {
+            title: "Cadastrar conta fixa",
+            description: "Inclua aluguel, internet, academia e tudo que volta todo mes.",
+            done: state.fixedBillCount > 0,
+            target: ".bills-panel",
+            action: "Adicionar conta"
+        },
+        {
+            title: "Criar primeira meta",
+            description: "Separe dinheiro para reserva, viagem ou qualquer plano importante.",
+            done: state.goalCount > 0,
+            target: ".goals-panel",
+            action: "Criar meta"
+        },
+        {
+            title: "Lancar primeira despesa",
+            description: "Registre um gasto real para ver o limite do dia se mexendo.",
+            done: state.expenseCount > 0,
+            target: ".quick-panel",
+            action: "Lancar despesa"
+        }
+    ];
+
+    const completed = steps.filter((step) => step.done).length;
+    const nextStep = steps.find((step) => !step.done);
+    $("#onboarding-status").textContent = `${completed} de ${steps.length}`;
+    $("#onboarding-progress-bar").style.width = `${Math.round((completed / steps.length) * 100)}%`;
+
+    list.innerHTML = steps.map((step, index) => `
+        <article class="onboarding-step ${step.done ? "onboarding-step--done" : ""} ${step === nextStep ? "onboarding-step--next" : ""}">
+            <span class="onboarding-step__number">${step.done ? "✓" : index + 1}</span>
+            <div>
+                <strong>${escapeHtml(step.title)}</strong>
+                <p>${escapeHtml(step.description)}</p>
+            </div>
+            <button class="button button--tiny" type="button" data-scroll-target="${step.target}" ${step.done ? "disabled" : ""}>
+                ${step.done ? "Feito" : escapeHtml(step.action)}
+            </button>
+        </article>
+    `).join("");
+}
+
 async function loadFixedBills() {
     $("#bills-status").textContent = "Atualizando...";
     const bills = await api("/api/me/fixed-bills");
     renderFixedBills(bills);
     $("#bills-status").textContent = `${bills.length} conta${bills.length === 1 ? "" : "s"}`;
+    renderOnboarding();
 }
 
 function renderFixedBills(bills) {
     const list = $("#bill-list");
     list.innerHTML = "";
     state.fixedBillsById.clear();
+    state.fixedBillCount = bills.length;
 
     if (!bills.length) {
         list.innerHTML = '<div class="empty-state">Cadastre suas contas fixas para o limite diario ficar mais realista.</div>';
@@ -582,12 +669,14 @@ async function loadFinancialGoals() {
     const goals = await api("/api/me/financial-goals");
     renderFinancialGoals(goals);
     $("#goals-status").textContent = `${goals.length} meta${goals.length === 1 ? "" : "s"}`;
+    renderOnboarding();
 }
 
 function renderFinancialGoals(goals) {
     const list = $("#goal-list");
     list.innerHTML = "";
     state.goalsById.clear();
+    state.goalCount = goals.length;
 
     if (!goals.length) {
         list.innerHTML = '<div class="empty-state">Crie uma meta para acompanhar seu progresso e reservar dinheiro sem perder o limite do dia.</div>';

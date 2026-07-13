@@ -11,6 +11,7 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
 - Frontend estatico servido pela propria API.
 - Fluxos ja disponiveis na tela:
   - criar conta e login;
+  - acompanhar um onboarding guiado dos primeiros passos;
   - configurar renda mensal e ciclo;
   - ver dashboard com limite diario seguro;
   - cadastrar, listar, editar e excluir rendas do ciclo;
