@@ -35,6 +35,7 @@
 - Limpeza automatica de sessao expirada no frontend.
 - Scripts locais para iniciar a API.
 - Testes automatizados iniciais de ciclo, limite diario e dashboard.
+- Testes automatizados de categorias e despesas com EF Core InMemory.
 
 ## Proximos passos recomendados
 

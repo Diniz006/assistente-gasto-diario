@@ -7,5 +7,9 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\AssistenteGastoDiario.Application\AssistenteGastoDiario.Application.csproj" />
+    <ProjectReference Include="..\..\src\AssistenteGastoDiario.Infrastructure\AssistenteGastoDiario.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.8" />
   </ItemGroup>
 </Project>

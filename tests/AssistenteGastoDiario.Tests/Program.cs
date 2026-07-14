@@ -1,8 +1,14 @@
 using AssistenteGastoDiario.Application.DTOs.Dashboard;
+using AssistenteGastoDiario.Application.DTOs.Categories;
+using AssistenteGastoDiario.Application.DTOs.Expenses;
 using AssistenteGastoDiario.Application.DTOs.FinancialCycles;
 using AssistenteGastoDiario.Application.DTOs.SafeDailyLimits;
 using AssistenteGastoDiario.Application.Services;
+using AssistenteGastoDiario.Domain.Entities;
 using AssistenteGastoDiario.Domain.Enums;
+using AssistenteGastoDiario.Infrastructure.Data;
+using AssistenteGastoDiario.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 
 var tests = new (string Name, Action Run)[]
 {
@@ -13,7 +19,11 @@ var tests = new (string Name, Action Run)[]
     ("SafeDailyLimit: calculates available balance and daily limit", SafeDailyLimitCalculatesAvailableBalance),
     ("SafeDailyLimit: returns zero when balance is unavailable", SafeDailyLimitReturnsZeroWhenUnavailable),
     ("SafeDailyLimit: rejects negative remaining days", SafeDailyLimitRejectsNegativeDays),
-    ("Dashboard: combines cycle, safe limit and alerts", DashboardBuildsSummaryAndAlerts)
+    ("Dashboard: combines cycle, safe limit and alerts", DashboardBuildsSummaryAndAlerts),
+    ("CategoryService: creates, trims and lists categories", CategoryServiceCreatesAndListsCategories),
+    ("CategoryService: rejects duplicated category names", CategoryServiceRejectsDuplicatedNames),
+    ("ExpenseService: creates and lists expenses by period", ExpenseServiceCreatesAndListsByPeriod),
+    ("ExpenseService: rejects inactive expense category", ExpenseServiceRejectsInactiveCategory)
 };
 
 var failures = new List<string>();
@@ -174,6 +184,156 @@ static void DashboardBuildsSummaryAndAlerts()
     AssertEqual(2, result.OpenAlertsCount);
     AssertEqual(3, result.Alerts.Count);
     AssertTrue(result.Alerts.Any(alert => alert.Type == AlertType.LowBalance), "Expected a low balance alert.");
+}
+
+static void CategoryServiceCreatesAndListsCategories()
+{
+    using var dbContext = CreateDbContext();
+    var userId = SeedUser(dbContext);
+    var service = new CategoryService(dbContext);
+
+    var created = service.CreateAsync(
+        userId,
+        new CreateCategoryRequest("  Mercado  ", CategoryType.Expense, "#1f6f4a", "cart"))
+        .GetAwaiter()
+        .GetResult();
+
+    var categories = service.ListAsync(userId, CategoryType.Expense)
+        .GetAwaiter()
+        .GetResult();
+
+    AssertEqual("Mercado", created.Name);
+    AssertEqual(CategoryType.Expense, created.Type);
+    AssertEqual("#1f6f4a", created.Color);
+    AssertEqual(1, categories.Count);
+    AssertEqual(created.Id, categories.Single().Id);
+}
+
+static void CategoryServiceRejectsDuplicatedNames()
+{
+    using var dbContext = CreateDbContext();
+    var userId = SeedUser(dbContext);
+    var service = new CategoryService(dbContext);
+
+    service.CreateAsync(userId, new CreateCategoryRequest("Mercado", CategoryType.Expense))
+        .GetAwaiter()
+        .GetResult();
+
+    AssertThrows<InvalidOperationException>(() =>
+        service.CreateAsync(userId, new CreateCategoryRequest("Mercado", CategoryType.Expense))
+            .GetAwaiter()
+            .GetResult());
+}
+
+static void ExpenseServiceCreatesAndListsByPeriod()
+{
+    using var dbContext = CreateDbContext();
+    var userId = SeedUser(dbContext);
+    var categoryId = SeedCategory(dbContext, userId, CategoryType.Expense, "Mercado");
+    var service = new ExpenseService(dbContext);
+
+    var created = service.CreateAsync(
+        userId,
+        new CreateExpenseRequest(
+            categoryId,
+            "  Compra do mes  ",
+            250.75m,
+            new DateOnly(2026, 7, 14),
+            PaymentMethod.Pix,
+            "arroz e feijao"))
+        .GetAwaiter()
+        .GetResult();
+
+    service.CreateAsync(
+        userId,
+        new CreateExpenseRequest(
+            categoryId,
+            "Fora do periodo",
+            80m,
+            new DateOnly(2026, 8, 2),
+            PaymentMethod.DebitCard))
+        .GetAwaiter()
+        .GetResult();
+
+    var expenses = service.ListByPeriodAsync(
+            userId,
+            new DateOnly(2026, 7, 1),
+            new DateOnly(2026, 7, 31))
+        .GetAwaiter()
+        .GetResult();
+
+    AssertEqual("Compra do mes", created.Description);
+    AssertEqual(250.75m, created.Amount);
+    AssertEqual(PaymentMethod.Pix, created.PaymentMethod);
+    AssertEqual("arroz e feijao", created.Notes);
+    AssertEqual(1, expenses.Count);
+    AssertEqual(created.Id, expenses.Single().Id);
+}
+
+static void ExpenseServiceRejectsInactiveCategory()
+{
+    using var dbContext = CreateDbContext();
+    var userId = SeedUser(dbContext);
+    var categoryId = SeedCategory(dbContext, userId, CategoryType.Expense, "Antiga", isActive: false);
+    var service = new ExpenseService(dbContext);
+
+    AssertThrows<InvalidOperationException>(() =>
+        service.CreateAsync(
+                userId,
+                new CreateExpenseRequest(
+                    categoryId,
+                    "Compra",
+                    10m,
+                    new DateOnly(2026, 7, 14),
+                    PaymentMethod.Cash))
+            .GetAwaiter()
+            .GetResult());
+}
+
+static AppDbContext CreateDbContext()
+{
+    var options = new DbContextOptionsBuilder<AppDbContext>()
+        .UseInMemoryDatabase($"agd-tests-{Guid.NewGuid()}")
+        .Options;
+
+    return new AppDbContext(options);
+}
+
+static Guid SeedUser(AppDbContext dbContext)
+{
+    var user = new User
+    {
+        Name = "Teste",
+        Email = $"{Guid.NewGuid():N}@example.com",
+        PasswordHash = "hash"
+    };
+
+    dbContext.Users.Add(user);
+    dbContext.SaveChanges();
+
+    return user.Id;
+}
+
+static Guid SeedCategory(
+    AppDbContext dbContext,
+    Guid userId,
+    CategoryType type,
+    string name,
+    bool isActive = true)
+{
+    var category = new Category
+    {
+        UserId = userId,
+        Name = name,
+        Type = type,
+        IsActive = isActive,
+        IsDefault = false
+    };
+
+    dbContext.Categories.Add(category);
+    dbContext.SaveChanges();
+
+    return category.Id;
 }
 
 static void AssertEqual<T>(T expected, T actual)

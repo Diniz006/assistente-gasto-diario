@@ -101,7 +101,7 @@ Se estiver usando o SDK global instalado em `C:\Program Files\dotnet`, o projeto
 
 ## Testes automatizados
 
-Para rodar os testes das regras principais:
+Para rodar os testes das regras principais e dos servicos de dados:
 
 ```powershell
 dotnet run --project tests/AssistenteGastoDiario.Tests/AssistenteGastoDiario.Tests.csproj
