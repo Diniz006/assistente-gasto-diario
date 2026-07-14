@@ -9,6 +9,7 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
 - Autenticacao JWT.
 - Swagger habilitado.
 - Frontend estatico servido pela propria API.
+- Base PWA/mobile com manifest, service worker e icone instalavel.
 - Fluxos ja disponiveis na tela:
   - criar conta e login;
   - acompanhar um onboarding guiado dos primeiros passos;

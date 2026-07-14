@@ -1,0 +1,21 @@
+{
+    "name": "Assistente de Gasto Diario",
+    "short_name": "Gasto Diario",
+    "description": "Seu limite seguro diario, despesas rapidas e resumo financeiro em um app leve.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#f2e6cf",
+    "theme_color": "#f2e6cf",
+    "categories": ["finance", "productivity"],
+    "lang": "pt-BR",
+    "icons": [
+        {
+            "src": "/icons/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}

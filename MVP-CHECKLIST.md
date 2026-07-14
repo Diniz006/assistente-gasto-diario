@@ -15,6 +15,7 @@
 - Lancamento rapido de despesa.
 - Contribuicoes para metas no backend.
 - Frontend estatico inicial.
+- Base PWA/mobile instalavel com manifest, service worker e icone.
 - Tela de configuracao financeira.
 - Edicao de configuracoes financeiras no painel.
 - Tela de dashboard.

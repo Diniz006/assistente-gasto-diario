@@ -40,8 +40,21 @@ document.addEventListener("DOMContentLoaded", () => {
     bindAuthTabs();
     bindForms();
     bindEditModal();
+    registerServiceWorker();
     renderSession();
 });
+
+function registerServiceWorker() {
+    if (!("serviceWorker" in navigator)) {
+        return;
+    }
+
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js").catch(() => {
+            // PWA support is a bonus. The app should keep working if registration fails.
+        });
+    });
+}
 
 function bindAuthTabs() {
     document.querySelectorAll("[data-auth-tab]").forEach((button) => {
