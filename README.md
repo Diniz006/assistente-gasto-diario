@@ -25,6 +25,7 @@ MVP de assistente financeiro pessoal para responder uma pergunta simples: quanto
   - ver historico de despesas do ciclo;
   - filtrar e buscar despesas por periodo, texto, categoria e pagamento;
   - exportar despesas, rendas e resumo mensal em CSV;
+  - receber feedback visual em acoes de salvar, filtrar e exportar;
   - cadastrar e listar contas fixas;
   - criar metas financeiras e registrar contribuicoes;
   - editar e excluir despesas, contas fixas e metas pelo frontend.

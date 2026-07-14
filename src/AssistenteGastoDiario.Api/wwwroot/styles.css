@@ -32,6 +32,13 @@ select {
     font: inherit;
 }
 
+button,
+input,
+select,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
 .shell {
     width: min(1120px, calc(100% - 32px));
     margin: 0 auto;
@@ -153,6 +160,7 @@ select:focus {
 .button {
     border: 0;
     border-radius: 999px;
+    min-height: 48px;
     padding: 14px 18px;
     font-family: "Trebuchet MS", Verdana, sans-serif;
     font-weight: 800;
@@ -780,6 +788,42 @@ select:focus {
 input:disabled {
     cursor: not-allowed;
     opacity: 0.55;
+}
+
+select:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.is-busy {
+    opacity: 0.82;
+}
+
+.is-busy .button[type="submit"],
+.button[aria-busy="true"] {
+    position: relative;
+    padding-left: 40px;
+}
+
+.is-busy .button[type="submit"]::before,
+.button[aria-busy="true"]::before {
+    content: "";
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    margin-top: -6px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 999px;
+    animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .empty-state {

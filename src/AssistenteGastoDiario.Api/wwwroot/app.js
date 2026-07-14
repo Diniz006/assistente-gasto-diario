@@ -73,167 +73,194 @@ function bindEditModal() {
 function bindForms() {
     $("#login-form").addEventListener("submit", async (event) => {
         event.preventDefault();
-        const data = Object.fromEntries(new FormData(event.currentTarget));
-        await login(data.email, data.password);
+        const form = event.currentTarget;
+        await runWithFeedback(form, "Entrando...", async () => {
+            const data = Object.fromEntries(new FormData(form));
+            await login(data.email, data.password);
+        });
     });
 
     $("#signup-form").addEventListener("submit", async (event) => {
         event.preventDefault();
-        const data = Object.fromEntries(new FormData(event.currentTarget));
-        await api("/api/users", {
-            method: "POST",
-            body: data,
-            auth: false
+        const form = event.currentTarget;
+        await runWithFeedback(form, "Criando...", async () => {
+            const data = Object.fromEntries(new FormData(form));
+            await api("/api/users", {
+                method: "POST",
+                body: data,
+                auth: false
+            });
+            await login(data.email, data.password);
         });
-        await login(data.email, data.password);
     });
 
     $("#settings-form").addEventListener("submit", async (event) => {
         event.preventDefault();
-        const data = Object.fromEntries(new FormData(event.currentTarget));
-        await saveFinancialSettings(data);
-        showToast("Configuracao salva. Agora o painel ja consegue calcular seu dia.");
-        await loadDashboard();
+        const form = event.currentTarget;
+        await runWithFeedback(form, "Salvando...", async () => {
+            const data = Object.fromEntries(new FormData(form));
+            await saveFinancialSettings(data);
+            showToast("Configuracao salva. Agora o painel ja consegue calcular seu dia.");
+            await loadDashboard();
+        });
     });
 
     $("#financial-settings-form").addEventListener("submit", async (event) => {
         event.preventDefault();
         const form = event.currentTarget;
-        const data = Object.fromEntries(new FormData(form));
-        $("#financial-settings-status").textContent = "Salvando...";
-        const setting = await saveFinancialSettings(data);
-        renderFinancialSettings(setting);
-        showToast("Configuracoes atualizadas. Painel recalculado.");
-        await loadDashboard();
+        await runWithFeedback(form, "Salvando...", async () => {
+            const data = Object.fromEntries(new FormData(form));
+            $("#financial-settings-status").textContent = "Salvando...";
+            const setting = await saveFinancialSettings(data);
+            renderFinancialSettings(setting);
+            showToast("Configuracoes atualizadas. Painel recalculado.");
+            await loadDashboard();
+        });
     });
 
     $("#quick-expense-form").addEventListener("submit", async (event) => {
         event.preventDefault();
         const form = event.currentTarget;
-        const data = Object.fromEntries(new FormData(form));
-        $("#quick-status").textContent = "Lancando...";
-        const response = await api("/api/me/quick-expenses", {
-            method: "POST",
-            body: {
-                description: data.description,
-                amount: Number(data.amount),
-                categoryId: data.categoryId || null,
-                spentOn: data.spentOn || todayIso(),
-                paymentMethod: Number(data.paymentMethod),
-                notes: data.notes || null
-            }
+        await runWithFeedback(form, "Lancando...", async () => {
+            const data = Object.fromEntries(new FormData(form));
+            $("#quick-status").textContent = "Lancando...";
+            const response = await api("/api/me/quick-expenses", {
+                method: "POST",
+                body: {
+                    description: data.description,
+                    amount: Number(data.amount),
+                    categoryId: data.categoryId || null,
+                    spentOn: data.spentOn || todayIso(),
+                    paymentMethod: Number(data.paymentMethod),
+                    notes: data.notes || null
+                }
+            });
+            form.reset();
+            $("#quick-spent-on").value = todayIso();
+            $("#quick-status").textContent = "Despesa registrada";
+            showToast(`${response.expense.description} entrou no ciclo. Limite atualizado.`);
+            renderDashboard(response.dashboard);
+            await loadCycleSummary();
+            await loadExpensesForCurrentCycle();
+            setTimeout(() => $("#quick-status").textContent = "", 1800);
         });
-        form.reset();
-        $("#quick-spent-on").value = todayIso();
-        $("#quick-status").textContent = "Despesa registrada";
-        showToast(`${response.expense.description} entrou no ciclo. Limite atualizado.`);
-        renderDashboard(response.dashboard);
-        await loadCycleSummary();
-        await loadExpensesForCurrentCycle();
-        setTimeout(() => $("#quick-status").textContent = "", 1800);
     });
 
     $("#income-form").addEventListener("submit", async (event) => {
         event.preventDefault();
         const form = event.currentTarget;
-        const data = Object.fromEntries(new FormData(form));
-        $("#incomes-status").textContent = "Salvando...";
-        await api("/api/me/incomes", {
-            method: "POST",
-            body: {
-                categoryId: data.categoryId || null,
-                description: data.description,
-                amount: Number(data.amount),
-                receivedOn: data.receivedOn || todayIso(),
-                isRecurring: Boolean(data.isRecurring),
-                notes: null
-            }
+        await runWithFeedback(form, "Salvando...", async () => {
+            const data = Object.fromEntries(new FormData(form));
+            $("#incomes-status").textContent = "Salvando...";
+            await api("/api/me/incomes", {
+                method: "POST",
+                body: {
+                    categoryId: data.categoryId || null,
+                    description: data.description,
+                    amount: Number(data.amount),
+                    receivedOn: data.receivedOn || todayIso(),
+                    isRecurring: Boolean(data.isRecurring),
+                    notes: null
+                }
+            });
+            form.reset();
+            form.elements.receivedOn.value = todayIso();
+            showToast(`${data.description} entrou nas rendas do ciclo.`);
+            await loadDashboard();
         });
-        form.reset();
-        form.elements.receivedOn.value = todayIso();
-        showToast(`${data.description} entrou nas rendas do ciclo.`);
-        await loadDashboard();
     });
 
     $("#fixed-bill-form").addEventListener("submit", async (event) => {
         event.preventDefault();
         const form = event.currentTarget;
-        const data = Object.fromEntries(new FormData(form));
-        $("#bills-status").textContent = "Salvando...";
-        await api("/api/me/fixed-bills", {
-            method: "POST",
-            body: {
-                categoryId: data.categoryId || null,
-                name: data.name,
-                amount: Number(data.amount),
-                dueDay: Number(data.dueDay),
-                status: 1,
-                isRecurringMonthly: true,
-                autoIncludeInCycle: true
-            }
+        await runWithFeedback(form, "Salvando...", async () => {
+            const data = Object.fromEntries(new FormData(form));
+            $("#bills-status").textContent = "Salvando...";
+            await api("/api/me/fixed-bills", {
+                method: "POST",
+                body: {
+                    categoryId: data.categoryId || null,
+                    name: data.name,
+                    amount: Number(data.amount),
+                    dueDay: Number(data.dueDay),
+                    status: 1,
+                    isRecurringMonthly: true,
+                    autoIncludeInCycle: true
+                }
+            });
+            form.reset();
+            form.elements.dueDay.value = "5";
+            showToast(`${data.name} entrou nas contas fixas. Limite recalculado.`);
+            await loadDashboard();
+            await loadFixedBills();
         });
-        form.reset();
-        form.elements.dueDay.value = "5";
-        showToast(`${data.name} entrou nas contas fixas. Limite recalculado.`);
-        await loadDashboard();
-        await loadFixedBills();
     });
 
     $("#financial-goal-form").addEventListener("submit", async (event) => {
         event.preventDefault();
         const form = event.currentTarget;
-        const data = Object.fromEntries(new FormData(form));
-        $("#goals-status").textContent = "Salvando...";
-        await api("/api/me/financial-goals", {
-            method: "POST",
-            body: {
-                categoryId: data.categoryId || null,
-                name: data.name,
-                targetAmount: Number(data.targetAmount),
-                currentAmount: Number(data.currentAmount || 0),
-                monthlyPlannedAmount: Number(data.monthlyPlannedAmount || 0),
-                priority: 2,
-                status: 1
-            }
+        await runWithFeedback(form, "Salvando...", async () => {
+            const data = Object.fromEntries(new FormData(form));
+            $("#goals-status").textContent = "Salvando...";
+            await api("/api/me/financial-goals", {
+                method: "POST",
+                body: {
+                    categoryId: data.categoryId || null,
+                    name: data.name,
+                    targetAmount: Number(data.targetAmount),
+                    currentAmount: Number(data.currentAmount || 0),
+                    monthlyPlannedAmount: Number(data.monthlyPlannedAmount || 0),
+                    priority: 2,
+                    status: 1
+                }
+            });
+            form.reset();
+            form.elements.currentAmount.value = "0";
+            form.elements.monthlyPlannedAmount.value = "0";
+            showToast(`${data.name} entrou nas suas metas.`);
+            await loadDashboard();
+            await loadFinancialGoals();
         });
-        form.reset();
-        form.elements.currentAmount.value = "0";
-        form.elements.monthlyPlannedAmount.value = "0";
-        showToast(`${data.name} entrou nas suas metas.`);
-        await loadDashboard();
-        await loadFinancialGoals();
     });
 
     $("#category-form").addEventListener("submit", async (event) => {
         event.preventDefault();
         const form = event.currentTarget;
-        const data = Object.fromEntries(new FormData(form));
-        $("#categories-status").textContent = "Salvando...";
-        await api("/api/me/categories", {
-            method: "POST",
-            body: {
-                name: data.name,
-                type: Number(data.type),
-                color: data.color || null,
-                icon: null
-            }
+        await runWithFeedback(form, "Salvando...", async () => {
+            const data = Object.fromEntries(new FormData(form));
+            $("#categories-status").textContent = "Salvando...";
+            await api("/api/me/categories", {
+                method: "POST",
+                body: {
+                    name: data.name,
+                    type: Number(data.type),
+                    color: data.color || null,
+                    icon: null
+                }
+            });
+            form.reset();
+            form.elements.color.value = "#1f6f4a";
+            showToast(`${data.name} entrou nas suas categorias.`);
+            await loadCategories();
         });
-        form.reset();
-        form.elements.color.value = "#1f6f4a";
-        showToast(`${data.name} entrou nas suas categorias.`);
-        await loadCategories();
     });
 
     $("#monthly-summary-form").addEventListener("submit", async (event) => {
         event.preventDefault();
-        const data = Object.fromEntries(new FormData(event.currentTarget));
-        await loadMonthlyOverview(data.referenceMonth || currentMonthIso());
+        const form = event.currentTarget;
+        await runWithFeedback(form, "Atualizando...", async () => {
+            const data = Object.fromEntries(new FormData(form));
+            await loadMonthlyOverview(data.referenceMonth || currentMonthIso());
+        });
     });
 
     $("#expense-filter-form").addEventListener("submit", async (event) => {
         event.preventDefault();
-        const filters = getExpenseFilters();
-        await loadExpensesByPeriod(filters.startDate, filters.endDate);
+        const form = event.currentTarget;
+        await runWithFeedback(form, "Filtrando...", async () => {
+            const filters = getExpenseFilters();
+            await loadExpensesByPeriod(filters.startDate, filters.endDate);
+        });
     });
 
     $("#expense-filter-form").addEventListener("input", () => {
@@ -241,8 +268,10 @@ function bindForms() {
     });
 
     $("#expense-filter-clear").addEventListener("click", async () => {
-        resetExpenseFiltersToCurrentCycle();
-        await loadExpensesForCurrentCycle();
+        await runButtonWithFeedback($("#expense-filter-clear"), "Limpando...", async () => {
+            resetExpenseFiltersToCurrentCycle();
+            await loadExpensesForCurrentCycle();
+        });
     });
 
     $("#export-expenses").addEventListener("click", exportFilteredExpenses);
@@ -256,18 +285,20 @@ function bindForms() {
 
         event.preventDefault();
         const form = event.target;
-        const data = Object.fromEntries(new FormData(form));
-        const goalId = form.dataset.goalId;
-        await api(`/api/me/financial-goals/${goalId}/contributions`, {
-            method: "POST",
-            body: {
-                amount: Number(data.amount),
-                notes: data.notes || null
-            }
+        await runWithFeedback(form, "Guardando...", async () => {
+            const data = Object.fromEntries(new FormData(form));
+            const goalId = form.dataset.goalId;
+            await api(`/api/me/financial-goals/${goalId}/contributions`, {
+                method: "POST",
+                body: {
+                    amount: Number(data.amount),
+                    notes: data.notes || null
+                }
+            });
+            showToast("Contribuicao registrada. Meta e limite recalculados.");
+            await loadDashboard();
+            await loadFinancialGoals();
         });
-        showToast("Contribuicao registrada. Meta e limite recalculados.");
-        await loadDashboard();
-        await loadFinancialGoals();
     });
 
     $("#category-list").addEventListener("click", async (event) => {
@@ -428,6 +459,64 @@ function clearSession(message) {
 
     if (message) {
         showToast(message);
+    }
+}
+
+async function runWithFeedback(form, busyLabel, action) {
+    const submitButton = form.querySelector('button[type="submit"]');
+    const controls = [...form.querySelectorAll("button")];
+    const originalButtonText = submitButton?.textContent;
+
+    controls.forEach((control) => {
+        control.disabled = true;
+        control.setAttribute("aria-busy", "true");
+    });
+    form.classList.add("is-busy");
+    if (submitButton) {
+        submitButton.textContent = busyLabel;
+    }
+
+    try {
+        await action();
+    } catch (error) {
+        handleUiError(error);
+    } finally {
+        controls.forEach((control) => {
+            control.disabled = false;
+            control.removeAttribute("aria-busy");
+        });
+        form.classList.remove("is-busy");
+        if (submitButton && originalButtonText) {
+            submitButton.textContent = originalButtonText;
+        }
+    }
+}
+
+async function runButtonWithFeedback(button, busyLabel, action) {
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    button.textContent = busyLabel;
+
+    try {
+        await action();
+    } catch (error) {
+        handleUiError(error);
+    } finally {
+        button.disabled = false;
+        button.removeAttribute("aria-busy");
+        button.textContent = originalText;
+    }
+}
+
+function handleUiError(error) {
+    if (error?.status === 401) {
+        clearSession("Sua sessao expirou. Entre novamente para continuar.");
+        return;
+    }
+
+    if (!error?.status) {
+        showToast(error?.message || "Algo saiu do trilho. Tente novamente.");
     }
 }
 

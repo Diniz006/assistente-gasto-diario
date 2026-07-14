@@ -26,6 +26,7 @@
 - Historico de despesas recentes.
 - Filtros e busca no historico de despesas.
 - Exportacao CSV de despesas, rendas e resumo mensal.
+- Feedback visual de carregamento/erro em formularios e acoes principais.
 - Cadastro/listagem de contas fixas.
 - Cadastro/listagem de metas financeiras no frontend.
 - Contribuicoes para metas no frontend.
