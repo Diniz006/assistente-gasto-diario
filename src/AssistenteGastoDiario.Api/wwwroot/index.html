@@ -65,6 +65,14 @@
                 <button class="button button--ghost" id="logout-button" type="button">Sair</button>
             </header>
 
+            <nav class="mobile-nav" aria-label="Navegacao principal">
+                <button class="mobile-nav__item mobile-nav__item--active" type="button" data-mobile-nav-target="#today-section">Hoje</button>
+                <button class="mobile-nav__item" type="button" data-mobile-nav-target="#quick-section">Lancar</button>
+                <button class="mobile-nav__item" type="button" data-mobile-nav-target="#history-section">Historico</button>
+                <button class="mobile-nav__item" type="button" data-mobile-nav-target="#goals-section">Metas</button>
+                <button class="mobile-nav__item" type="button" data-mobile-nav-target="#more-section">Mais</button>
+            </nav>
+
             <section class="setup-card hidden" id="setup-card">
                 <div>
                     <p class="muted">Primeira configuracao</p>
@@ -126,7 +134,7 @@
                 </form>
             </section>
 
-            <section class="dashboard-grid">
+            <section class="dashboard-grid app-section" id="today-section">
                 <article class="limit-card">
                     <span class="chip" id="cycle-label">Ciclo atual</span>
                     <p class="muted">Voce pode gastar hoje</p>
@@ -209,7 +217,7 @@
                 </div>
             </section>
 
-            <section class="panel quick-panel">
+            <section class="panel quick-panel app-section" id="quick-section">
                 <div class="section-title">
                     <div>
                         <p class="muted">Lancamento rapido</p>
@@ -292,7 +300,7 @@
                 </div>
             </section>
 
-            <section class="panel expenses-panel">
+            <section class="panel expenses-panel app-section" id="history-section">
                 <div class="section-title">
                     <div>
                         <p class="muted">Historico do ciclo</p>
@@ -373,7 +381,7 @@
                 </div>
             </section>
 
-            <section class="panel goals-panel">
+            <section class="panel goals-panel app-section" id="goals-section">
                 <div class="section-title">
                     <div>
                         <p class="muted">Planos e reservas</p>
@@ -411,7 +419,7 @@
                 </div>
             </section>
 
-            <section class="panel categories-panel">
+            <section class="panel categories-panel app-section" id="more-section">
                 <div class="section-title">
                     <div>
                         <p class="muted">Organizacao</p>

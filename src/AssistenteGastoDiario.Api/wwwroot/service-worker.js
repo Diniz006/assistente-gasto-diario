@@ -1,4 +1,4 @@
-const CACHE_NAME = "assistente-gasto-diario-v1";
+const CACHE_NAME = "assistente-gasto-diario-v2";
 const APP_SHELL = [
     "/",
     "/index.html",

@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     bindAuthTabs();
     bindForms();
     bindEditModal();
+    bindMobileNav();
     registerServiceWorker();
     renderSession();
 });
@@ -66,6 +67,27 @@ function bindAuthTabs() {
             $("#login-form").classList.toggle("hidden", tab !== "login");
             $("#signup-form").classList.toggle("hidden", tab !== "signup");
         });
+    });
+}
+
+function bindMobileNav() {
+    document.querySelectorAll("[data-mobile-nav-target]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const targetSelector = button.dataset.mobileNavTarget;
+            const target = $(targetSelector);
+            if (!target) {
+                return;
+            }
+
+            setActiveMobileNav(targetSelector);
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+    });
+}
+
+function setActiveMobileNav(targetSelector) {
+    document.querySelectorAll("[data-mobile-nav-target]").forEach((button) => {
+        button.classList.toggle("mobile-nav__item--active", button.dataset.mobileNavTarget === targetSelector);
     });
 }
 
@@ -1210,6 +1232,13 @@ function renderOnboarding() {
 
     const completed = steps.filter((step) => step.done).length;
     const nextStep = steps.find((step) => !step.done);
+    $("#onboarding-panel").classList.toggle("hidden", completed === steps.length);
+
+    if (completed === steps.length) {
+        list.innerHTML = "";
+        return;
+    }
+
     $("#onboarding-status").textContent = `${completed} de ${steps.length}`;
     $("#onboarding-progress-bar").style.width = `${Math.round((completed / steps.length) * 100)}%`;
 

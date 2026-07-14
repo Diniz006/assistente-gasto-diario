@@ -217,6 +217,14 @@ select:focus {
     letter-spacing: -0.05em;
 }
 
+.mobile-nav {
+    display: none;
+}
+
+.app-section {
+    scroll-margin-top: 18px;
+}
+
 .setup-card {
     display: grid;
     gap: 16px;
@@ -885,9 +893,17 @@ select:disabled {
 }
 
 @media (max-width: 860px) {
+    body {
+        padding-bottom: calc(86px + env(safe-area-inset-bottom));
+    }
+
     .shell {
         width: min(100% - 22px, 680px);
         padding: 28px 0;
+    }
+
+    .app {
+        padding-bottom: 18px;
     }
 
     .dashboard-grid,
@@ -909,6 +925,45 @@ select:disabled {
     .app-header {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .mobile-nav {
+        position: fixed;
+        right: 12px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        left: 12px;
+        z-index: 30;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+        padding: 8px;
+        border: 1px solid rgba(24, 34, 29, 0.12);
+        border-radius: 28px;
+        background: rgba(255, 252, 244, 0.92);
+        box-shadow: 0 16px 40px rgba(24, 34, 29, 0.18);
+        backdrop-filter: blur(18px);
+    }
+
+    .mobile-nav__item {
+        border: 0;
+        border-radius: 20px;
+        min-height: 48px;
+        padding: 8px 6px;
+        color: var(--muted);
+        background: transparent;
+        font-family: "Trebuchet MS", Verdana, sans-serif;
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .mobile-nav__item--active {
+        color: #fffaf0;
+        background: var(--brand);
+        box-shadow: 0 10px 24px rgba(31, 111, 74, 0.24);
+    }
+
+    .app-section {
+        scroll-margin-top: 14px;
     }
 
     .onboarding-step {
