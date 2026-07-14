@@ -34,11 +34,12 @@
 - Modal interno para edicoes principais no frontend.
 - Limpeza automatica de sessao expirada no frontend.
 - Scripts locais para iniciar a API.
+- Testes automatizados iniciais de ciclo, limite diario e dashboard.
 
 ## Proximos passos recomendados
 
 1. Qualidade:
-   - testes automatizados;
+   - ampliar cobertura de testes automatizados;
    - tratamento padronizado de erros;
    - validacoes melhores no frontend;
    - estados de loading/erro mais claros.

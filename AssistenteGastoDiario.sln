@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssistenteGastoDiario.Domai
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssistenteGastoDiario.Infrastructure", "src\AssistenteGastoDiario.Infrastructure\AssistenteGastoDiario.Infrastructure.csproj", "{C0B30C55-8B0A-4E2C-9C4D-0E1F7C4DE2B8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssistenteGastoDiario.Tests", "tests\AssistenteGastoDiario.Tests\AssistenteGastoDiario.Tests.csproj", "{A80B93E7-99A9-4DD1-83E8-4A0F0834EA1A}"
+EndProject
 Global
     GlobalSection(SolutionConfigurationPlatforms) = preSolution
         Debug|Any CPU = Debug|Any CPU
@@ -36,6 +38,11 @@ Global
         {C0B30C55-8B0A-4E2C-9C4D-0E1F7C4DE2B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
         {C0B30C55-8B0A-4E2C-9C4D-0E1F7C4DE2B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
         {C0B30C55-8B0A-4E2C-9C4D-0E1F7C4DE2B8}.Release|Any CPU.Build.0 = Release|Any CPU
+
+        {A80B93E7-99A9-4DD1-83E8-4A0F0834EA1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {A80B93E7-99A9-4DD1-83E8-4A0F0834EA1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {A80B93E7-99A9-4DD1-83E8-4A0F0834EA1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {A80B93E7-99A9-4DD1-83E8-4A0F0834EA1A}.Release|Any CPU.Build.0 = Release|Any CPU
     EndGlobalSection
     GlobalSection(SolutionProperties) = preSolution
         HideSolutionNode = FALSE

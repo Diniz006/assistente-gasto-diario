@@ -99,6 +99,14 @@ Se estiver usando o SDK global instalado em `C:\Program Files\dotnet`, o projeto
 7. Crie uma meta financeira.
 8. Edite ou exclua algum item para conferir o painel recalculado.
 
+## Testes automatizados
+
+Para rodar os testes das regras principais:
+
+```powershell
+dotnet run --project tests/AssistenteGastoDiario.Tests/AssistenteGastoDiario.Tests.csproj
+```
+
 ## GitHub
 
 Para publicar este projeto no GitHub, siga o guia:

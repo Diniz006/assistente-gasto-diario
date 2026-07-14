@@ -27,3 +27,6 @@ jobs:
       - name: Build
         run: dotnet build AssistenteGastoDiario.sln --configuration Release --no-restore
 
+      - name: Tests
+        run: dotnet run --project tests/AssistenteGastoDiario.Tests/AssistenteGastoDiario.Tests.csproj --configuration Release --no-build
+
