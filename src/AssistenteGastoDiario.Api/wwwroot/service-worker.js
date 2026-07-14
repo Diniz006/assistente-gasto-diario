@@ -1,4 +1,4 @@
-const CACHE_NAME = "assistente-gasto-diario-v2";
+const CACHE_NAME = "assistente-gasto-diario-v3";
 const APP_SHELL = [
     "/",
     "/index.html",
@@ -45,7 +45,20 @@ self.addEventListener("fetch", (event) => {
         return;
     }
 
-    event.respondWith(
-        caches.match(request).then((cachedResponse) => cachedResponse || fetch(request))
-    );
+    event.respondWith(networkFirst(request));
 });
+
+async function networkFirst(request) {
+    const cache = await caches.open(CACHE_NAME);
+
+    try {
+        const response = await fetch(request);
+        if (response.ok) {
+            cache.put(request, response.clone());
+        }
+
+        return response;
+    } catch {
+        return cache.match(request);
+    }
+}

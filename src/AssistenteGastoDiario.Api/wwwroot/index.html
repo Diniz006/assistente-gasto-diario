@@ -66,14 +66,14 @@
             </header>
 
             <nav class="mobile-nav" aria-label="Navegacao principal">
-                <button class="mobile-nav__item mobile-nav__item--active" type="button" data-mobile-nav-target="#today-section">Hoje</button>
-                <button class="mobile-nav__item" type="button" data-mobile-nav-target="#quick-section">Lancar</button>
-                <button class="mobile-nav__item" type="button" data-mobile-nav-target="#history-section">Historico</button>
-                <button class="mobile-nav__item" type="button" data-mobile-nav-target="#goals-section">Metas</button>
-                <button class="mobile-nav__item" type="button" data-mobile-nav-target="#more-section">Mais</button>
+                <button class="mobile-nav__item mobile-nav__item--active" type="button" data-mobile-tab-target="today">Hoje</button>
+                <button class="mobile-nav__item" type="button" data-mobile-tab-target="quick">Lancar</button>
+                <button class="mobile-nav__item" type="button" data-mobile-tab-target="history">Historico</button>
+                <button class="mobile-nav__item" type="button" data-mobile-tab-target="goals">Metas</button>
+                <button class="mobile-nav__item" type="button" data-mobile-tab-target="more">Mais</button>
             </nav>
 
-            <section class="setup-card hidden" id="setup-card">
+            <section class="setup-card hidden mobile-tab-panel" id="setup-card" data-mobile-tab="today">
                 <div>
                     <p class="muted">Primeira configuracao</p>
                     <h3>Informe sua renda e ciclo</h3>
@@ -95,7 +95,7 @@
                 </form>
             </section>
 
-            <section class="panel onboarding-panel" id="onboarding-panel">
+            <section class="panel onboarding-panel mobile-tab-panel" id="onboarding-panel" data-mobile-tab="today">
                 <div class="section-title">
                     <div>
                         <p class="muted">Primeiros passos</p>
@@ -109,7 +109,7 @@
                 <div class="onboarding-list" id="onboarding-list"></div>
             </section>
 
-            <section class="panel settings-panel hidden" id="financial-settings-panel">
+            <section class="panel settings-panel hidden mobile-tab-panel" id="financial-settings-panel" data-mobile-tab="more">
                 <div class="section-title">
                     <div>
                         <p class="muted">Configuracoes financeiras</p>
@@ -134,7 +134,7 @@
                 </form>
             </section>
 
-            <section class="dashboard-grid app-section" id="today-section">
+            <section class="dashboard-grid mobile-tab-panel mobile-tab-panel--active" data-mobile-tab="today">
                 <article class="limit-card">
                     <span class="chip" id="cycle-label">Ciclo atual</span>
                     <p class="muted">Voce pode gastar hoje</p>
@@ -153,7 +153,7 @@
                 </article>
             </section>
 
-            <section class="panel insights-panel">
+            <section class="panel insights-panel mobile-tab-panel" data-mobile-tab="today">
                 <div class="section-title">
                     <div>
                         <p class="muted">Leitura do ciclo</p>
@@ -181,7 +181,7 @@
                 </div>
             </section>
 
-            <section class="panel monthly-panel">
+            <section class="panel monthly-panel mobile-tab-panel" data-mobile-tab="today">
                 <div class="section-title">
                     <div>
                         <p class="muted">Resumo do mes</p>
@@ -202,7 +202,7 @@
                 <div class="monthly-trend" id="monthly-trend"></div>
             </section>
 
-            <section class="panel export-panel">
+            <section class="panel export-panel mobile-tab-panel" data-mobile-tab="more">
                 <div class="section-title">
                     <div>
                         <p class="muted">Exportacao</p>
@@ -217,7 +217,7 @@
                 </div>
             </section>
 
-            <section class="panel quick-panel app-section" id="quick-section">
+            <section class="panel quick-panel mobile-tab-panel" data-mobile-tab="quick">
                 <div class="section-title">
                     <div>
                         <p class="muted">Lancamento rapido</p>
@@ -262,7 +262,7 @@
                 </form>
             </section>
 
-            <section class="panel incomes-panel">
+            <section class="panel incomes-panel mobile-tab-panel" data-mobile-tab="more">
                 <div class="section-title">
                     <div>
                         <p class="muted">Dinheiro que entrou</p>
@@ -300,7 +300,7 @@
                 </div>
             </section>
 
-            <section class="panel expenses-panel app-section" id="history-section">
+            <section class="panel expenses-panel mobile-tab-panel" data-mobile-tab="history">
                 <div class="section-title">
                     <div>
                         <p class="muted">Historico do ciclo</p>
@@ -347,7 +347,7 @@
                 </div>
             </section>
 
-            <section class="panel bills-panel">
+            <section class="panel bills-panel mobile-tab-panel" data-mobile-tab="more">
                 <div class="section-title">
                     <div>
                         <p class="muted">Compromissos mensais</p>
@@ -381,7 +381,7 @@
                 </div>
             </section>
 
-            <section class="panel goals-panel app-section" id="goals-section">
+            <section class="panel goals-panel mobile-tab-panel" data-mobile-tab="goals">
                 <div class="section-title">
                     <div>
                         <p class="muted">Planos e reservas</p>
@@ -419,7 +419,7 @@
                 </div>
             </section>
 
-            <section class="panel categories-panel app-section" id="more-section">
+            <section class="panel categories-panel mobile-tab-panel" data-mobile-tab="more">
                 <div class="section-title">
                     <div>
                         <p class="muted">Organizacao</p>

@@ -35,6 +35,7 @@ const toast = $("#toast");
 const editModal = $("#edit-modal");
 const editModalForm = $("#edit-modal-form");
 let editModalResolver = null;
+let activeMobileTab = "today";
 
 document.addEventListener("DOMContentLoaded", () => {
     bindAuthTabs();
@@ -71,23 +72,25 @@ function bindAuthTabs() {
 }
 
 function bindMobileNav() {
-    document.querySelectorAll("[data-mobile-nav-target]").forEach((button) => {
+    document.querySelectorAll("[data-mobile-tab-target]").forEach((button) => {
         button.addEventListener("click", () => {
-            const targetSelector = button.dataset.mobileNavTarget;
-            const target = $(targetSelector);
-            if (!target) {
-                return;
-            }
-
-            setActiveMobileNav(targetSelector);
-            target.scrollIntoView({ behavior: "smooth", block: "start" });
+            setActiveMobileTab(button.dataset.mobileTabTarget);
+            window.scrollTo({ top: 0, behavior: "smooth" });
         });
     });
+
+    setActiveMobileTab(activeMobileTab);
 }
 
-function setActiveMobileNav(targetSelector) {
-    document.querySelectorAll("[data-mobile-nav-target]").forEach((button) => {
-        button.classList.toggle("mobile-nav__item--active", button.dataset.mobileNavTarget === targetSelector);
+function setActiveMobileTab(tabName) {
+    activeMobileTab = tabName || "today";
+
+    document.querySelectorAll("[data-mobile-tab-target]").forEach((button) => {
+        button.classList.toggle("mobile-nav__item--active", button.dataset.mobileTabTarget === activeMobileTab);
+    });
+
+    document.querySelectorAll("[data-mobile-tab]").forEach((section) => {
+        section.classList.toggle("mobile-tab-panel--active", section.dataset.mobileTab === activeMobileTab);
     });
 }
 
@@ -465,6 +468,7 @@ async function renderSession() {
         return;
     }
 
+    setActiveMobileTab(activeMobileTab);
     $("#user-greeting").textContent = `Ola, ${state.user?.name || "vamos nessa"}`;
     $("#income-received-on").value = todayIso();
     $("#quick-spent-on").value = todayIso();
