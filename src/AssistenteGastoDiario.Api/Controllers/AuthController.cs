@@ -1,4 +1,5 @@
 using AssistenteGastoDiario.Application.DTOs.Auth;
+using AssistenteGastoDiario.Application.DTOs.Users;
 using AssistenteGastoDiario.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +10,28 @@ namespace AssistenteGastoDiario.Api.Controllers;
 public sealed class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IUserService _userService;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, IUserService userService)
     {
         _authService = authService;
+        _userService = userService;
+    }
+
+    [HttpPost("register")]
+    public async Task<ActionResult<UserResponse>> Register(
+        CreateUserRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var user = await _userService.CreateAsync(request, cancellationToken);
+            return CreatedAtAction(nameof(Register), new { userId = user.Id }, user);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
 
     [HttpPost("login")]

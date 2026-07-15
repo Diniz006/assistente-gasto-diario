@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+    <title id="title">Assistente de Gasto Diario</title>
+    <desc id="desc">Icone com carteira e grafico de limite diario.</desc>
+    <rect width="512" height="512" rx="112" fill="#f2e6cf"/>
+    <circle cx="392" cy="128" r="72" fill="#d85f27"/>
+    <path fill="#1f6f4a" d="M104 164c0-33 27-60 60-60h168c27 0 51 18 58 44h-32c-7-11-19-18-32-18H164c-19 0-34 15-34 34v22h260c38 0 68 30 68 68v100c0 38-30 68-68 68H146c-50 0-90-40-90-90V214c0-28 20-50 48-50zm26 70v98c0 9 7 16 16 16h244c9 0 16-7 16-16v-78c0-11-9-20-20-20H130z"/>
+    <path fill="#fff7ea" d="M160 290c0-12 10-22 22-22h168c12 0 22 10 22 22s-10 22-22 22H182c-12 0-22-10-22-22z"/>
+    <path fill="#18221d" d="M178 380c0-10 8-18 18-18h100c10 0 18 8 18 18s-8 18-18 18H196c-10 0-18-8-18-18z" opacity=".72"/>
+</svg>
