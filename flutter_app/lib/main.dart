@@ -4,10 +4,9 @@ import 'core/theme/app_theme.dart';
 import 'features/dashboard/presentation/dashboard_controller.dart';
 import 'features/dashboard/presentation/finance_app.dart';
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   final controller = DashboardController();
-  await controller.loadMock();
 
   runApp(AssistenteGastoDiarioApp(controller: controller));
 }

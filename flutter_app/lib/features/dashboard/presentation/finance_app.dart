@@ -4,8 +4,8 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_background.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/section_title.dart';
+import '../../../core/widgets/state_view.dart';
 import '../../authentication/presentation/auth_panel.dart';
-import '../domain/finance_models.dart';
 import 'dashboard_controller.dart';
 import 'dashboard_home.dart';
 
@@ -23,6 +23,12 @@ class FinanceApp extends StatefulWidget {
 class _FinanceAppState extends State<FinanceApp> {
   bool loggedIn = false;
   AppTab tab = AppTab.today;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.loadMock();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +68,10 @@ class _FinanceAppState extends State<FinanceApp> {
                                 onLogout: () => setState(() => loggedIn = false),
                               )
                             else
-                              const _LoadStateMessage(status: ScreenLoadStatus.loading),
+                              StateView(
+                                status: widget.controller.status,
+                                onRetry: widget.controller.loadMock,
+                              ),
                           ],
                         ),
                       ),
@@ -284,23 +293,6 @@ class _ToastState extends State<_Toast> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _LoadStateMessage extends StatelessWidget {
-  const _LoadStateMessage({required this.status});
-
-  final ScreenLoadStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const CircularProgressIndicator(color: AppTokens.brand),
-        const SizedBox(height: 12),
-        Text(status.name),
-      ],
     );
   }
 }
