@@ -60,7 +60,7 @@ class AppSelectField<T> extends StatelessWidget {
     return _FieldShell(
       label: label,
       child: DropdownButtonFormField<T>(
-        value: value,
+        initialValue: value,
         items: items,
         onChanged: onChanged,
         decoration: const InputDecoration(),
@@ -107,9 +107,10 @@ class EmptyState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.38),
+        color: Colors.white.withValues(alpha: 0.38),
         borderRadius: BorderRadius.circular(AppTokens.radiusCard),
-        border: Border.all(color: const Color(0x2e18221d), style: BorderStyle.solid),
+        border: Border.all(
+            color: const Color(0x2e18221d), style: BorderStyle.solid),
       ),
       child: Text(
         message,

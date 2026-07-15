@@ -25,7 +25,8 @@ class LocalCache {
     return decoded is Map<String, dynamic> ? decoded : null;
   }
 
-  Future<void> saveString(String key, String value) => _preferences.setString(key, value);
+  Future<void> saveString(String key, String value) =>
+      _preferences.setString(key, value);
 
   String? readString(String key) => _preferences.getString(key);
 

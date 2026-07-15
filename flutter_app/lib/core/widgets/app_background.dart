@@ -23,12 +23,14 @@ class AppBackground extends StatelessWidget {
           Positioned(
             left: -130,
             top: -150,
-            child: _Glow(color: AppTokens.sun.withOpacity(0.36), size: 560),
+            child:
+                _Glow(color: AppTokens.sun.withValues(alpha: 0.36), size: 560),
           ),
           Positioned(
             right: -170,
             top: -210,
-            child: _Glow(color: AppTokens.brand.withOpacity(0.22), size: 600),
+            child: _Glow(
+                color: AppTokens.brand.withValues(alpha: 0.22), size: 600),
           ),
           child,
         ],
@@ -50,7 +52,7 @@ class _Glow extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: RadialGradient(colors: [color, color.withOpacity(0)]),
+        gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
       ),
     );
   }

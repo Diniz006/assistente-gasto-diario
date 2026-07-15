@@ -27,7 +27,8 @@ class DailySafeSpendingCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppTokens.radiusPill),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Text(
                   snapshot.cycleLabel,
                   style: const TextStyle(
@@ -51,7 +52,8 @@ class DailySafeSpendingCard extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 12),
-          Text(snapshot.safeMessage, style: Theme.of(context).textTheme.bodyLarge),
+          Text(snapshot.safeMessage,
+              style: Theme.of(context).textTheme.bodyLarge),
         ],
       ),
     );

@@ -34,15 +34,25 @@ class _AuthPanelState extends State<AuthPanel> {
               ),
               child: Row(
                 children: [
-                  Expanded(child: _TabButton(label: 'Entrar', active: !signup, onTap: () => setState(() => signup = false))),
-                  Expanded(child: _TabButton(label: 'Criar conta', active: signup, onTap: () => setState(() => signup = true))),
+                  Expanded(
+                      child: _TabButton(
+                          label: 'Entrar',
+                          active: !signup,
+                          onTap: () => setState(() => signup = false))),
+                  Expanded(
+                      child: _TabButton(
+                          label: 'Criar conta',
+                          active: signup,
+                          onTap: () => setState(() => signup = true))),
                 ],
               ),
             ),
             const SizedBox(height: AppTokens.gapLg),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 180),
-              child: signup ? _SignupForm(onSubmit: _submit, busy: busy) : _LoginForm(onSubmit: _submit, busy: busy),
+              child: signup
+                  ? _SignupForm(onSubmit: _submit, busy: busy)
+                  : _LoginForm(onSubmit: _submit, busy: busy),
             ),
           ],
         ),
@@ -59,7 +69,8 @@ class _AuthPanelState extends State<AuthPanel> {
 }
 
 class _TabButton extends StatelessWidget {
-  const _TabButton({required this.label, required this.active, required this.onTap});
+  const _TabButton(
+      {required this.label, required this.active, required this.onTap});
 
   final String label;
   final bool active;
@@ -102,7 +113,8 @@ class _LoginForm extends StatelessWidget {
       key: const ValueKey('login'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const AppTextField(label: 'Email', keyboardType: TextInputType.emailAddress),
+        const AppTextField(
+            label: 'Email', keyboardType: TextInputType.emailAddress),
         const SizedBox(height: AppTokens.gap),
         const AppTextField(label: 'Senha', obscureText: true),
         const SizedBox(height: AppTokens.gap),
@@ -126,7 +138,8 @@ class _SignupForm extends StatelessWidget {
       children: [
         const AppTextField(label: 'Nome', maxLength: 120),
         const SizedBox(height: AppTokens.gap),
-        const AppTextField(label: 'Email', keyboardType: TextInputType.emailAddress),
+        const AppTextField(
+            label: 'Email', keyboardType: TextInputType.emailAddress),
         const SizedBox(height: AppTokens.gap),
         const AppTextField(label: 'Senha', obscureText: true),
         const SizedBox(height: AppTokens.gap),

@@ -33,16 +33,25 @@ Todos devem continuar usando componentes estilizados do app:
 - sessao expirada;
 - modo offline.
 
-`ApiClient` valida status HTTP e `Content-Type` antes de decodificar JSON. HTML inesperado é tratado como erro amigável.
+`ApiClient` valida status HTTP e `Content-Type` antes de decodificar JSON. HTML inesperado e tratado como erro amigavel.
+
+## Validacao tecnica atual
+
+- Scaffold Android gerado.
+- `flutter pub get`: passou.
+- `dart format .`: passou.
+- `flutter analyze`: passou sem issues.
+- `flutter test`: passou.
+- `flutter build apk --debug`: bloqueado por ausencia de Android SDK / `ANDROID_HOME`.
 
 ## Diferencas inevitaveis nesta etapa
 
 - CSS `backdrop-filter` foi aproximado com `BackdropFilter` do Flutter.
-- `hover` do HTML não existe da mesma forma em Android; fica representado por `InkWell`/toque.
-- `input type="date"`, `month` e `color` precisam virar pickers Flutter na próxima rodada de refinamento.
+- `hover` do HTML nao existe da mesma forma em Android; fica representado por `InkWell`/toque.
+- `input type="date"`, `month` e `color` precisam virar pickers Flutter na proxima rodada de refinamento.
 - Fontes `Georgia` e `Trebuchet MS` dependem de arquivos de fonte para fidelidade real no Android.
-- O projeto Android nativo não foi gerado porque `flutter` não está instalado no PATH desta máquina.
+- A revisao visual em Android real ainda depende de Android SDK/emulador ou aparelho configurado.
 
 ## Proxima etapa
 
-Depois da aprovação visual, conectar repositórios reais por feature usando `ApiClient` e `LocalCache`, preservando os cálculos financeiros na API.
+Depois da aprovacao visual, conectar repositorios reais por feature usando `ApiClient` e `LocalCache`, preservando os calculos financeiros na API.

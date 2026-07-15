@@ -17,11 +17,13 @@ class ApiClient {
   set token(String? value) => _token = value;
 
   Future<Map<String, dynamic>> getJson(String path) async {
-    final response = await _send(() => _httpClient.get(_uri(path), headers: _headers()));
+    final response =
+        await _send(() => _httpClient.get(_uri(path), headers: _headers()));
     return _decodeObject(response);
   }
 
-  Future<Map<String, dynamic>> postJson(String path, Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> postJson(
+      String path, Map<String, dynamic> body) async {
     final response = await _send(
       () => _httpClient.post(
         _uri(path),

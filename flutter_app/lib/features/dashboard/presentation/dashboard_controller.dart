@@ -14,13 +14,15 @@ class DashboardController extends ChangeNotifier {
   DashboardSnapshot? snapshot;
   String? toast;
 
-  Future<void> loadMock({ScreenLoadStatus forcedStatus = ScreenLoadStatus.success}) async {
+  Future<void> loadMock(
+      {ScreenLoadStatus forcedStatus = ScreenLoadStatus.success}) async {
     status = ScreenLoadStatus.loading;
     notifyListeners();
     await Future<void>.delayed(const Duration(milliseconds: 350));
 
     status = forcedStatus;
-    if (forcedStatus == ScreenLoadStatus.success || forcedStatus == ScreenLoadStatus.offline) {
+    if (forcedStatus == ScreenLoadStatus.success ||
+        forcedStatus == ScreenLoadStatus.offline) {
       snapshot = forcedStatus == ScreenLoadStatus.success
           ? await _repository.getCurrentDashboard()
           : MockFinanceData.snapshot.copyWith(offline: true);

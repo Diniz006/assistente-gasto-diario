@@ -35,12 +35,19 @@ class DashboardHome extends StatelessWidget {
   Widget build(BuildContext context) {
     final content = switch (activeTab) {
       AppTab.today => _TodayTab(controller: controller, snapshot: snapshot),
-      AppTab.quick => QuickExpensePanel(controller: controller, categories: snapshot.categories),
-      AppTab.history => ExpensesPanel(expenses: snapshot.expenses, categories: snapshot.categories),
-      AppTab.goals => GoalsPanel(goals: snapshot.goals, categories: snapshot.categories, controller: controller),
+      AppTab.quick => QuickExpensePanel(
+          controller: controller, categories: snapshot.categories),
+      AppTab.history => ExpensesPanel(
+          expenses: snapshot.expenses, categories: snapshot.categories),
+      AppTab.goals => GoalsPanel(
+          goals: snapshot.goals,
+          categories: snapshot.categories,
+          controller: controller),
       AppTab.more => _MoreTab(snapshot: snapshot, onTabChanged: onTabChanged),
-      AppTab.incomes => IncomesPanel(incomes: snapshot.incomes, categories: snapshot.categories),
-      AppTab.bills => AccountsPanel(bills: snapshot.bills, categories: snapshot.categories),
+      AppTab.incomes => IncomesPanel(
+          incomes: snapshot.incomes, categories: snapshot.categories),
+      AppTab.bills =>
+        AccountsPanel(bills: snapshot.bills, categories: snapshot.categories),
       AppTab.categories => CategoriesPanel(categories: snapshot.categories),
       AppTab.settings => const _SettingsPanel(),
       AppTab.export => const _ExportPanel(),
@@ -76,11 +83,13 @@ class _AppHeader extends StatelessWidget {
             children: [
               const MutedLabel('Painel de hoje'),
               const SizedBox(height: 4),
-              Text('Olá, $userName', style: Theme.of(context).textTheme.headlineLarge),
+              Text('Olá, $userName',
+                  style: Theme.of(context).textTheme.headlineLarge),
             ],
           ),
         ),
-        AppButton(label: 'Sair', tone: AppButtonTone.ghost, onPressed: onLogout),
+        AppButton(
+            label: 'Sair', tone: AppButtonTone.ghost, onPressed: onLogout),
       ],
     );
   }
@@ -109,7 +118,7 @@ class _DesktopNav extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: AppTokens.panel.withOpacity(0.72),
+          color: AppTokens.panel.withValues(alpha: 0.72),
           border: Border.all(color: const Color(0x1a18221d)),
           borderRadius: BorderRadius.circular(AppTokens.radiusPill),
           boxShadow: AppTokens.softShadow,
@@ -122,7 +131,9 @@ class _DesktopNav extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 8),
                 child: AppButton(
                   label: item.$2,
-                  tone: active == item.$1 ? AppButtonTone.primary : AppButtonTone.ghost,
+                  tone: active == item.$1
+                      ? AppButtonTone.primary
+                      : AppButtonTone.ghost,
                   onPressed: () => onChanged(item.$1),
                 ),
               ),
@@ -154,7 +165,8 @@ class _TodayTab extends StatelessWidget {
         : Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(flex: 14, child: DailySafeSpendingCard(snapshot: snapshot)),
+              Expanded(
+                  flex: 14, child: DailySafeSpendingCard(snapshot: snapshot)),
               const SizedBox(width: AppTokens.gapLg),
               Expanded(flex: 8, child: _SummaryCard(snapshot: snapshot)),
             ],
@@ -189,7 +201,8 @@ class _SummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Resumo do ciclo', style: Theme.of(context).textTheme.headlineMedium),
+          Text('Resumo do ciclo',
+              style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: 22),
           for (final row in rows)
             Padding(
@@ -197,11 +210,16 @@ class _SummaryCard extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(row.$1, style: const TextStyle(color: AppTokens.muted, fontFamily: 'Trebuchet MS')),
+                    child: Text(row.$1,
+                        style: const TextStyle(
+                            color: AppTokens.muted,
+                            fontFamily: 'Trebuchet MS')),
                   ),
                   Text(
                     Formatters.currency(row.$2),
-                    style: const TextStyle(fontFamily: 'Trebuchet MS', fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                        fontFamily: 'Trebuchet MS',
+                        fontWeight: FontWeight.w800),
                   ),
                 ],
               ),
@@ -263,7 +281,9 @@ class _InsightsPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SectionTitle(eyebrow: 'Leitura do ciclo', title: 'Para onde o dinheiro está indo?'),
+          const SectionTitle(
+              eyebrow: 'Leitura do ciclo',
+              title: 'Para onde o dinheiro está indo?'),
           charts,
         ],
       ),
@@ -272,7 +292,8 @@ class _InsightsPanel extends StatelessWidget {
 }
 
 class _ChartCard extends StatelessWidget {
-  const _ChartCard({required this.eyebrow, required this.title, required this.child});
+  const _ChartCard(
+      {required this.eyebrow, required this.title, required this.child});
 
   final String eyebrow;
   final String title;
@@ -283,7 +304,7 @@ class _ChartCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.5),
+        color: Colors.white.withValues(alpha: 0.5),
         border: Border.all(color: const Color(0x1a18221d)),
         borderRadius: BorderRadius.circular(26),
       ),
@@ -309,15 +330,31 @@ class _FlowBars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rows = [
-      ('Renda', snapshot.incomeTotal, const [Color(0xff2f855a), AppTokens.brand]),
-      ('Guardado', snapshot.goalsTotal, const [AppTokens.sun, Color(0xffd59a2f)]),
-      ('Saídas', snapshot.fixedBillsTotal + snapshot.expensesTotal, const [AppTokens.rose, Color(0xffa9443c)]),
+      (
+        'Renda',
+        snapshot.incomeTotal,
+        const [Color(0xff2f855a), AppTokens.brand]
+      ),
+      (
+        'Guardado',
+        snapshot.goalsTotal,
+        const [AppTokens.sun, Color(0xffd59a2f)]
+      ),
+      (
+        'Saídas',
+        snapshot.fixedBillsTotal + snapshot.expensesTotal,
+        const [AppTokens.rose, Color(0xffa9443c)]
+      ),
     ];
     final maxValue = rows.map((row) => row.$2).reduce((a, b) => a > b ? a : b);
     return Column(
       children: [
         for (final row in rows)
-          _ProgressLine(label: row.$1, amount: row.$2, percent: row.$2 / maxValue, colors: row.$3),
+          _ProgressLine(
+              label: row.$1,
+              amount: row.$2,
+              percent: row.$2 / maxValue,
+              colors: row.$3),
       ],
     );
   }
@@ -331,10 +368,12 @@ class _CategoryBars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final expenseCategories = snapshot.expenses.map((expense) {
-      final category = snapshot.categories.firstWhere((item) => item.id == expense.categoryId);
+      final category = snapshot.categories
+          .firstWhere((item) => item.id == expense.categoryId);
       return (category, expense.amount);
     }).toList();
-    final maxValue = expenseCategories.map((row) => row.$2).reduce((a, b) => a > b ? a : b);
+    final maxValue =
+        expenseCategories.map((row) => row.$2).reduce((a, b) => a > b ? a : b);
     return Column(
       children: [
         for (final row in expenseCategories)
@@ -342,7 +381,10 @@ class _CategoryBars extends StatelessWidget {
             label: row.$1.name,
             amount: row.$2,
             percent: row.$2 / maxValue,
-            colors: [Color(row.$1.color), Color(row.$1.color).withOpacity(0.72)],
+            colors: [
+              Color(row.$1.color),
+              Color(row.$1.color).withValues(alpha: 0.72)
+            ],
             dotColor: Color(row.$1.color),
           ),
       ],
@@ -378,10 +420,15 @@ class _ProgressLine extends StatelessWidget {
                   width: 12,
                   height: 12,
                   margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+                  decoration:
+                      BoxDecoration(color: dotColor, shape: BoxShape.circle),
                 ),
-              Expanded(child: Text(label, style: const TextStyle(fontFamily: 'Trebuchet MS'))),
-              Text(Formatters.currency(amount), style: const TextStyle(color: AppTokens.muted, fontFamily: 'Trebuchet MS')),
+              Expanded(
+                  child: Text(label,
+                      style: const TextStyle(fontFamily: 'Trebuchet MS'))),
+              Text(Formatters.currency(amount),
+                  style: const TextStyle(
+                      color: AppTokens.muted, fontFamily: 'Trebuchet MS')),
             ],
           ),
           const SizedBox(height: 8),
@@ -393,7 +440,9 @@ class _ProgressLine extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: FractionallySizedBox(
                 widthFactor: percent.clamp(0.03, 1),
-                child: Container(decoration: BoxDecoration(gradient: LinearGradient(colors: colors))),
+                child: Container(
+                    decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: colors))),
               ),
             ),
           ),
@@ -406,23 +455,36 @@ class _ProgressLine extends StatelessWidget {
 class _MonthlyPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return AppPanel(
+    return const AppPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SectionTitle(eyebrow: 'Resumo do mês', title: 'Compare sua evolução'),
+          SectionTitle(eyebrow: 'Resumo do mês', title: 'Compare sua evolução'),
           Wrap(
             runSpacing: 12,
             spacing: 12,
-            children: const [
-              _MonthlyCard(label: 'Entradas', value: 'R$ 4.200,00', tone: AppTokens.brandStrong),
-              _MonthlyCard(label: 'Guardado', value: 'R$ 650,00', tone: Color(0xff9a681a)),
-              _MonthlyCard(label: 'Saídas', value: 'R$ 2.472,50', tone: Color(0xff9d3b33)),
-              _MonthlyCard(label: 'Saldo', value: 'R$ 1.077,50', tone: AppTokens.brandStrong),
+            children: [
+              _MonthlyCard(
+                  label: 'Entradas',
+                  value: 'R\$ 4.200,00',
+                  tone: AppTokens.brandStrong),
+              _MonthlyCard(
+                  label: 'Guardado',
+                  value: 'R\$ 650,00',
+                  tone: Color(0xff9a681a)),
+              _MonthlyCard(
+                  label: 'Saídas',
+                  value: 'R\$ 2.472,50',
+                  tone: Color(0xff9d3b33)),
+              _MonthlyCard(
+                  label: 'Saldo',
+                  value: 'R\$ 1.077,50',
+                  tone: AppTokens.brandStrong),
             ],
           ),
-          const SizedBox(height: 18),
-          const EmptyState('A tendência dos últimos meses será conectada à API na Etapa 2.'),
+          SizedBox(height: 18),
+          EmptyState(
+              'A tendência dos últimos meses será conectada à API na Etapa 2.'),
         ],
       ),
     );
@@ -430,7 +492,8 @@ class _MonthlyPanel extends StatelessWidget {
 }
 
 class _MonthlyCard extends StatelessWidget {
-  const _MonthlyCard({required this.label, required this.value, required this.tone});
+  const _MonthlyCard(
+      {required this.label, required this.value, required this.tone});
 
   final String label;
   final String value;
@@ -442,16 +505,23 @@ class _MonthlyCard extends StatelessWidget {
       width: 240,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.52),
+        color: Colors.white.withValues(alpha: 0.52),
         border: Border.all(color: const Color(0x1a18221d)),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: AppTokens.muted, fontFamily: 'Trebuchet MS')),
+          Text(label,
+              style: const TextStyle(
+                  color: AppTokens.muted, fontFamily: 'Trebuchet MS')),
           const SizedBox(height: 8),
-          Text(value, style: TextStyle(color: tone, fontFamily: 'Trebuchet MS', fontSize: 22, fontWeight: FontWeight.w800)),
+          Text(value,
+              style: TextStyle(
+                  color: tone,
+                  fontFamily: 'Trebuchet MS',
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800)),
         ],
       ),
     );
@@ -469,7 +539,11 @@ class _MoreTab extends StatelessWidget {
     final items = [
       ('Rendas', '${snapshot.incomes.length}', AppTab.incomes),
       ('Contas fixas', '${snapshot.bills.length}', AppTab.bills),
-      ('Categorias', '${snapshot.categories.where((item) => item.isActive).length}', AppTab.categories),
+      (
+        'Categorias',
+        '${snapshot.categories.where((item) => item.isActive).length}',
+        AppTab.categories
+      ),
       ('Ajustes', 'Ciclo', AppTab.settings),
       ('Exportar', 'CSV', AppTab.export),
     ];
@@ -478,15 +552,21 @@ class _MoreTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SectionTitle(eyebrow: 'Mais opções', title: 'Organize seu dinheiro'),
+          const SectionTitle(
+              eyebrow: 'Mais opções', title: 'Organize seu dinheiro'),
           Wrap(
             spacing: 12,
             runSpacing: 12,
             children: [
               for (final item in items)
                 SizedBox(
-                  width: MediaQuery.sizeOf(context).width <= 860 ? double.infinity : 190,
-                  child: _MoreButton(label: item.$1, badge: item.$2, onTap: () => onTabChanged(item.$3)),
+                  width: MediaQuery.sizeOf(context).width <= 860
+                      ? double.infinity
+                      : 190,
+                  child: _MoreButton(
+                      label: item.$1,
+                      badge: item.$2,
+                      onTap: () => onTabChanged(item.$3)),
                 ),
             ],
           ),
@@ -497,7 +577,8 @@ class _MoreTab extends StatelessWidget {
 }
 
 class _MoreButton extends StatelessWidget {
-  const _MoreButton({required this.label, required this.badge, required this.onTap});
+  const _MoreButton(
+      {required this.label, required this.badge, required this.onTap});
 
   final String label;
   final String badge;
@@ -521,11 +602,16 @@ class _MoreButton extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text(label, style: const TextStyle(fontFamily: 'Trebuchet MS', fontWeight: FontWeight.w800)),
+                child: Text(label,
+                    style: const TextStyle(
+                        fontFamily: 'Trebuchet MS',
+                        fontWeight: FontWeight.w800)),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.72), borderRadius: BorderRadius.circular(999)),
+                decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.72),
+                    borderRadius: BorderRadius.circular(999)),
                 child: Text(
                   badge,
                   style: const TextStyle(
@@ -549,23 +635,36 @@ class _SettingsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppPanel(
+    return const AppPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SectionTitle(eyebrow: 'Configurações financeiras', title: 'Ajuste renda e ciclo'),
+          SectionTitle(
+              eyebrow: 'Configurações financeiras',
+              title: 'Ajuste renda e ciclo'),
           Wrap(
             spacing: 14,
             runSpacing: 14,
             crossAxisAlignment: WrapCrossAlignment.end,
-            children: const [
-              SizedBox(width: 260, child: AppTextField(label: 'Renda mensal padrão', initialValue: '4200')),
-              SizedBox(width: 200, child: AppTextField(label: 'Dia inicial do ciclo', initialValue: '1')),
-              SizedBox(width: 200, child: AppTextField(label: 'Dia de fechamento', initialValue: '31')),
+            children: [
+              SizedBox(
+                  width: 260,
+                  child: AppTextField(
+                      label: 'Renda mensal padrão', initialValue: '4200')),
+              SizedBox(
+                  width: 200,
+                  child: AppTextField(
+                      label: 'Dia inicial do ciclo', initialValue: '1')),
+              SizedBox(
+                  width: 200,
+                  child: AppTextField(
+                      label: 'Dia de fechamento', initialValue: '31')),
             ],
           ),
-          const SizedBox(height: 14),
-          Align(alignment: Alignment.centerLeft, child: AppButton(label: 'Salvar ajustes', onPressed: null)),
+          SizedBox(height: 14),
+          Align(
+              alignment: Alignment.centerLeft,
+              child: AppButton(label: 'Salvar ajustes', onPressed: null)),
         ],
       ),
     );
@@ -577,15 +676,15 @@ class _ExportPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppPanel(
+    return const AppPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle(eyebrow: 'Exportação', title: 'Baixe seus dados'),
+          SectionTitle(eyebrow: 'Exportação', title: 'Baixe seus dados'),
           Wrap(
             spacing: 10,
             runSpacing: 10,
-            children: const [
+            children: [
               AppButton(label: 'Despesas filtradas', tone: AppButtonTone.ghost),
               AppButton(label: 'Rendas do ciclo', tone: AppButtonTone.ghost),
               AppButton(label: 'Resumo mensal', tone: AppButtonTone.ghost),

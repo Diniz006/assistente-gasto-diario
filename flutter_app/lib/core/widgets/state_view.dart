@@ -33,24 +33,34 @@ class StateView extends StatelessWidget {
 
     final message = switch (status) {
       ScreenLoadStatus.empty => 'Ainda não há dados para mostrar.',
-      ScreenLoadStatus.connectionError => 'Não foi possível carregar seus dados.',
-      ScreenLoadStatus.serverUnavailable => 'O servidor está indisponível no momento.',
-      ScreenLoadStatus.expiredSession => 'Sua sessão expirou. Entre novamente para continuar.',
-      ScreenLoadStatus.offline => 'Você está offline. Mostrando os últimos dados salvos.',
-      ScreenLoadStatus.success || ScreenLoadStatus.loading => 'Não foi possível carregar seus dados.',
+      ScreenLoadStatus.connectionError =>
+        'Não foi possível carregar seus dados.',
+      ScreenLoadStatus.serverUnavailable =>
+        'O servidor está indisponível no momento.',
+      ScreenLoadStatus.expiredSession =>
+        'Sua sessão expirou. Entre novamente para continuar.',
+      ScreenLoadStatus.offline =>
+        'Você está offline. Mostrando os últimos dados salvos.',
+      ScreenLoadStatus.success ||
+      ScreenLoadStatus.loading =>
+        'Não foi possível carregar seus dados.',
     };
 
     return AppPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle(eyebrow: 'Estado da tela', title: 'Algo precisa de atenção'),
+          const SectionTitle(
+              eyebrow: 'Estado da tela', title: 'Algo precisa de atenção'),
           Text(
             message,
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 18),
-          AppButton(label: 'Tentar novamente', tone: AppButtonTone.ghost, onPressed: onRetry),
+          AppButton(
+              label: 'Tentar novamente',
+              tone: AppButtonTone.ghost,
+              onPressed: onRetry),
         ],
       ),
     );

@@ -2,14 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_background.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/section_title.dart';
 import '../../../core/widgets/state_view.dart';
 import '../../authentication/presentation/auth_panel.dart';
 import 'dashboard_controller.dart';
 import 'dashboard_home.dart';
 
-enum AppTab { today, quick, history, goals, more, incomes, bills, categories, settings, export }
+enum AppTab {
+  today,
+  quick,
+  history,
+  goals,
+  more,
+  incomes,
+  bills,
+  categories,
+  settings,
+  export
+}
 
 class FinanceApp extends StatefulWidget {
   const FinanceApp({required this.controller, super.key});
@@ -58,14 +68,18 @@ class _FinanceAppState extends State<FinanceApp> {
                             const _HeroHeader(),
                             const SizedBox(height: AppTokens.gapXl),
                             if (!loggedIn)
-                              AuthPanel(onLoggedIn: () => setState(() => loggedIn = true))
+                              AuthPanel(
+                                  onLoggedIn: () =>
+                                      setState(() => loggedIn = true))
                             else if (snapshot != null)
                               DashboardHome(
                                 controller: widget.controller,
                                 snapshot: snapshot,
                                 activeTab: tab,
-                                onTabChanged: (value) => setState(() => tab = value),
-                                onLogout: () => setState(() => loggedIn = false),
+                                onTabChanged: (value) =>
+                                    setState(() => tab = value),
+                                onLogout: () =>
+                                    setState(() => loggedIn = false),
                               )
                             else
                               StateView(
@@ -97,7 +111,8 @@ class _FinanceAppState extends State<FinanceApp> {
     );
   }
 
-  double _horizontalPadding(BuildContext context) => MediaQuery.sizeOf(context).width <= 860 ? 11 : 16;
+  double _horizontalPadding(BuildContext context) =>
+      MediaQuery.sizeOf(context).width <= 860 ? 11 : 16;
 }
 
 class _HeroHeader extends StatelessWidget {
@@ -113,7 +128,10 @@ class _HeroHeader extends StatelessWidget {
         const SizedBox(height: AppTokens.gapSm),
         Text(
           'Quanto posso gastar hoje?',
-          style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: narrow ? 46 : 92),
+          style: Theme.of(context)
+              .textTheme
+              .displayLarge
+              ?.copyWith(fontSize: narrow ? 46 : 92),
         ),
         const SizedBox(height: AppTokens.gapSm),
         ConstrainedBox(
@@ -152,11 +170,14 @@ class _BottomNav extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 680),
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppTokens.panel.withOpacity(0.92),
+            color: AppTokens.panel.withValues(alpha: 0.92),
             border: Border.all(color: const Color(0x1f18221d)),
             borderRadius: BorderRadius.circular(28),
             boxShadow: const [
-              BoxShadow(color: Color(0x2e18221d), blurRadius: 40, offset: Offset(0, 16)),
+              BoxShadow(
+                  color: Color(0x2e18221d),
+                  blurRadius: 40,
+                  offset: Offset(0, 16)),
             ],
           ),
           child: Row(
@@ -167,7 +188,8 @@ class _BottomNav extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 3),
                     child: _NavItem(
                       label: item.$2,
-                      active: active == item.$1 || (item.$1 == AppTab.more && _isMore(active)),
+                      active: active == item.$1 ||
+                          (item.$1 == AppTab.more && _isMore(active)),
                       onTap: () => onChanged(item.$1),
                     ),
                   ),
@@ -190,7 +212,8 @@ class _BottomNav extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  const _NavItem({required this.label, required this.active, required this.onTap});
+  const _NavItem(
+      {required this.label, required this.active, required this.onTap});
 
   final String label;
   final bool active;
@@ -239,7 +262,10 @@ class _OfflineBanner extends StatelessWidget {
           color: const Color(0xf5fff6de),
           border: Border.all(color: const Color(0x389a681a)),
           borderRadius: BorderRadius.circular(22),
-          boxShadow: const [BoxShadow(color: Color(0x292d2618), blurRadius: 42, offset: Offset(0, 16))],
+          boxShadow: const [
+            BoxShadow(
+                color: Color(0x292d2618), blurRadius: 42, offset: Offset(0, 16))
+          ],
         ),
         child: const Text(
           'Você está offline. O app mostra os dados já carregados e volta a sincronizar quando a conexão retornar.',
@@ -277,7 +303,8 @@ class _ToastState extends State<_Toast> {
       right: 22,
       bottom: 22,
       child: Container(
-        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 44),
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 44),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         decoration: BoxDecoration(
           color: AppTokens.ink,

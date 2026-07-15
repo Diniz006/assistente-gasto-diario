@@ -19,19 +19,30 @@ class CategoriesPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SectionTitle(eyebrow: 'Organização', title: 'Categorias'),
-          Wrap(
+          const Wrap(
             spacing: 14,
             runSpacing: 14,
             crossAxisAlignment: WrapCrossAlignment.end,
-            children: const [
-              SizedBox(width: 250, child: AppTextField(label: 'Nome', hint: 'Ex: pets, estudos, delivery')),
-              SizedBox(width: 170, child: AppTextField(label: 'Tipo', initialValue: 'Despesa')),
-              SizedBox(width: 110, child: AppTextField(label: 'Cor', initialValue: '#1f6f4a')),
+            children: [
+              SizedBox(
+                  width: 250,
+                  child: AppTextField(
+                      label: 'Nome', hint: 'Ex: pets, estudos, delivery')),
+              SizedBox(
+                  width: 170,
+                  child: AppTextField(label: 'Tipo', initialValue: 'Despesa')),
+              SizedBox(
+                  width: 110,
+                  child: AppTextField(label: 'Cor', initialValue: '#1f6f4a')),
               AppButton(label: 'Criar categoria'),
             ],
           ),
           const SizedBox(height: 18),
-          for (final group in CategoryType.values) _CategoryGroup(type: group, categories: categories.where((item) => item.type == group).toList()),
+          for (final group in CategoryType.values)
+            _CategoryGroup(
+                type: group,
+                categories:
+                    categories.where((item) => item.type == group).toList()),
         ],
       ),
     );
@@ -82,7 +93,7 @@ class _CategoryItem extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.58),
+          color: Colors.white.withValues(alpha: 0.58),
           border: Border.all(color: const Color(0x1a18221d)),
           borderRadius: BorderRadius.circular(22),
         ),
@@ -94,8 +105,11 @@ class _CategoryItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Color(category.color),
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withOpacity(0.72), width: 2),
-                boxShadow: const [BoxShadow(color: Color(0x2918221d), spreadRadius: 1)],
+                border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.72), width: 2),
+                boxShadow: const [
+                  BoxShadow(color: Color(0x2918221d), spreadRadius: 1)
+                ],
               ),
             ),
             const SizedBox(width: 14),
@@ -103,9 +117,13 @@ class _CategoryItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(category.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  Text(category.name,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
-                  Text(category.isDefault ? 'Padrão' : 'Personalizada', style: const TextStyle(color: AppTokens.muted, fontFamily: 'Trebuchet MS')),
+                  Text(category.isDefault ? 'Padrão' : 'Personalizada',
+                      style: const TextStyle(
+                          color: AppTokens.muted, fontFamily: 'Trebuchet MS')),
                 ],
               ),
             ),

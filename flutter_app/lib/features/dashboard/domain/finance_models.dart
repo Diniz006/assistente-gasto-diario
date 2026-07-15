@@ -51,7 +51,9 @@ class GoalModel {
   final String? categoryId;
   final bool completed;
 
-  int get percent => targetAmount <= 0 ? 0 : ((currentAmount / targetAmount) * 100).clamp(0, 100).round();
+  int get percent => targetAmount <= 0
+      ? 0
+      : ((currentAmount / targetAmount) * 100).clamp(0, 100).round();
 }
 
 class DashboardSnapshot {
